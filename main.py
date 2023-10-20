@@ -1,11 +1,14 @@
 import os
 import base64
 import sys
+import threading
+import time
 
 from cryptography.fernet import Fernet
 import hashlib
 import json
 
+loadingText = None
 
 def load_secret(filename, password):
     if os.path.exists(filename):
@@ -27,11 +30,13 @@ def load_or_generate_key(password):
     return base64.urlsafe_b64encode(key)
 
 
-def isEncrypted(folder_path, libraries):
+def isEncrypted(folder_path, libraries, index):
     # Check if the folder is already encrypted
     for library in libraries:
         if library['dir'] == folder_path and library['encrypted']:
             return True
+        if index is not None:
+            index += 1
 
     return False
 
@@ -45,7 +50,7 @@ def save(filename, password, libraries):
         f.write(encrypted_data)
 
 
-def decrypt_folder(folder_path, password, libraries):
+def decrypt_folder(folder_path, password, libraries, index):
     # Load the key
     key = load_or_generate_key(password)
     # Crear objeto Fernet
@@ -60,7 +65,7 @@ def decrypt_folder(folder_path, password, libraries):
                 decrypted_data = fernet.decrypt(data)
                 with open(file_path, 'wb') as f:
                     f.write(decrypted_data)
-    libraries.remove({'dir': folder_path, 'encrypted': True})
+    libraries.remove({'dir': folder_path, 'encrypted': True}) # Here exists a problem
 
 
 def encrypt_folder(folder_path, password, libraries):
@@ -83,8 +88,44 @@ def encrypt_folder(folder_path, password, libraries):
     # Add the folder to the list
     libraries.append({'dir': folder_path, 'encrypted': True})
 
+def show_loading_animation(event: threading.Event) -> None:
+    animation = [
+        "[        ]",
+        "[=       ]",
+        "[===     ]",
+        "[====    ]",
+        "[=====   ]",
+        "[======  ]",
+        "[======= ]",
+        "[========]",
+        "[ =======]",
+        "[  ======]",
+        "[   =====]",
+        "[    ====]",
+        "[     ===]",
+        "[      ==]",
+        "[       =]",
+        "[        ]",
+        "[        ]"
+    ]
+
+    while True:
+        for char in animation:
+            sys.stdout.write(f"\r{loadingText} {char}")
+            sys.stdout.flush()
+            time.sleep(0.1)
+            if event.is_set():
+                return
+
+
+def stop_loading_animation(event):
+    event.set()
+    sys.stdout.write("\rDone.\n")
+    sys.stdout.flush()
+
 
 def main():
+    global loadingText
     action = None
 
     while action not in ["e", "d"]:
@@ -95,6 +136,7 @@ def main():
     attempt = 0
     password = None
     libraries = None
+    event = threading.Event()
 
     while libraries is None:
         password = input("Password: ")
@@ -107,14 +149,23 @@ def main():
         attempt += 1
 
     if action == "e":
-        if isEncrypted(folder_path, libraries):
+        if isEncrypted(folder_path, libraries, None):
             print(f"Folder {folder_path} already encrypted.")
         else:
+            loadingText = "Encrypting "
+            loading_thread = threading.Thread(target=show_loading_animation, args=(event,))
+            loading_thread.start()
             encrypt_folder(folder_path, password, libraries)
             save(secret, password, libraries)
+            stop_loading_animation(event)
     elif action == "d":
-        if isEncrypted(folder_path, libraries):
-            decrypt_folder(folder_path, password, libraries)
+        index = 0
+        if isEncrypted(folder_path, libraries, index):
+            loadingText = "Decrypting "
+            loading_thread = threading.Thread(target=show_loading_animation, args=(event,))
+            loading_thread.start()
+            decrypt_folder(folder_path, password, libraries, index)
+            stop_loading_animation(event)
         else:
             print(f"Folder {folder_path} isn't encrypted.")
 
