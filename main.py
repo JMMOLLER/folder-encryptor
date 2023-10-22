@@ -138,6 +138,10 @@ def main():
     libraries = None
     event = threading.Event()
 
+    if os.path.exists(folder_path) is False:
+        print("Folder doesn't exist.")
+        return sys.exit(0)
+
     while libraries is None:
         password = input("Password: ")
         libraries = load_secret(secret, password)
