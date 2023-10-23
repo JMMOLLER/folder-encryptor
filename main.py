@@ -59,7 +59,7 @@ def save(filename, password, libraries):
 def decrypt_folder(folder_path, password, libraries, index):
     # Load the key
     key = load_or_generate_key(password)
-    # Crear objeto Fernet
+    # Create Fernet object
     fernet = Fernet(key)
 
     for root, dirs, files in os.walk(folder_path):
@@ -77,7 +77,7 @@ def decrypt_folder(folder_path, password, libraries, index):
                     f.write(decrypted_data)
 
     # Remove the folder from the list
-    libraries.remove({'dir': folder_path, 'encrypted': True}) # Here exists a problem
+    libraries.remove({'dir': folder_path, 'encrypted': True})
 
 
 def encrypt_folder(folder_path, password, libraries):
@@ -194,7 +194,6 @@ def main():
                 loading_thread = threading.Thread(target=show_loading_animation, args=(event,))
                 loading_thread.start()
                 encrypt_folder(folder_path, password, libraries)
-                save(secret, password, libraries)
 
         elif action == "d":
             index = 0
@@ -209,6 +208,7 @@ def main():
     except Exception as e:
         print(f"Error: {e}")
     finally:
+        save(secret, password, libraries)
         stop_loading_animation(event)
 
 
