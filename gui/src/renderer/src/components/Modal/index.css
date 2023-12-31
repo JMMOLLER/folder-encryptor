@@ -1,0 +1,106 @@
+.modal {
+  position: fixed;
+  width: 100vw;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.308);
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+.modal.close {
+  opacity: 0;
+  transition: opacity 0.3s 0.3s ease-in-out;
+}
+.container.modal {
+  width: 500px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  z-index: 1000;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  background-color: rgb(236, 236, 236);
+  padding-bottom: 15px;
+  border-radius: 15px;
+  opacity: 0;
+  animation: fromTop 0.3s 0.2s ease-in-out forwards;
+}
+.container.modal.close {
+  animation: toBottom 0.3s ease-in-out forwards;
+}
+.buttons-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  width: 100%;
+}
+.buttons-container button {
+  width: 100px;
+  height: 30px;
+}
+.input-group {
+  display: flex;
+  flex-direction: column-reverse;
+  position: relative;
+  margin-top: .9rem;
+}
+#path {
+  height: 1.9rem;
+  width: 100%;
+  outline: none;
+  border: 1px solid rgba(17, 103, 184, 0.301);
+  border-radius: 5px;
+  padding: 5px;
+}
+#path:focus {
+  border: 1px solid rgb(54, 142, 241)
+}
+#path ~ label {
+  position: absolute;
+  top: 50%;
+  left: 5px;
+  transform: translateY(-50%);
+  transition: all 0.3s ease-in-out;
+}
+#path:focus ~ label, #path:valid ~ label {
+  top: -20%;
+  left: 0;
+  font-size: .9rem;
+  color: rgb(54, 142, 241);
+  z-index: 0;
+  padding: 0 5px;
+}
+#path:focus ~ label::after, #path:valid ~ label::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  bottom: 3px;
+  width: 93%;
+  height: 1px;
+  z-index: -1;
+  background-color: rgb(255, 255, 255);
+}
+
+@keyframes fromTop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -100%)
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+@keyframes toBottom {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, 100%);
+  }
+}
