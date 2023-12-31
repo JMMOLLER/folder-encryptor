@@ -16,14 +16,35 @@ excludes_files = [
   "secret.ext",
   "main.py",
 ]
+operations = [
+  'encrypt',
+  'decrypt',
+  'check-librarie',
+  'get-content',
+]
+statusess = [
+  'pending',
+  'complete',
+  'error',
+]
+jsTypes = {
+  'bool': 'boolean',
+  'int': 'number',
+  'float': 'number',
+  'str': 'string',
+  'list': 'Array',
+  'dict': 'Object'
+}
 
 
 def checkLibrarie():
-  print(os.path.exists(secret))
-  clearBuffer()
+  res = os.path.exists(secret)
+  printResponse(operations[2], statusess[1], res)
 
 
-def clearBuffer():
+def printResponse(operation: str, status: str, data:  str | list | bool | float):
+  dataType = jsTypes.get(type(data).__name__)
+  print(json.dumps({'operation': operation, 'status': status, 'dataType': dataType, 'data': data}))
   sys.stdout.flush() # important - otherwise the output will be buffered
 
 
@@ -59,7 +80,7 @@ def save_secret(filename: str, password: str, libraries: list):
 def is_encrypted(folder_path, libraries, index):
   # Check if the folder is already encrypted
   for library in libraries:
-    if library['dir'] == folder_path and library['encrypted']:
+    if library['path'] == folder_path and library['encrypted']:
       return True
     if index is not None:
       index += 1
@@ -109,21 +130,40 @@ def decrypt_filename(fernet: Fernet, filename: str, file_path: str, root: str):
   os.rename(file_path, os.path.join(root, decrypted_name.decode()))
 
 
-def send_processed_items():
+def send_processed_items(operation: str):
   global processed_items
   processed_items += 1
   percentage = (processed_items / total_items) * 100
-  print(f"\r{percentage:.2f}")
-  clearBuffer()
+  status = statusess[0]
+  if percentage == 100:
+    status = statusess[1]
+  printResponse(operation, status, percentage)
+
+
+def isValidPassword(libraries: list):
+  if libraries is None:
+    return False
+  return True
+
+
+def shouldNext(libraries: list, folder_path: str, index: int):
+  if index not in [0, 1]:
+    printResponse(operations[0], statusess[2], "Invalid process.")
+    return False
+
+  if isValidPassword(libraries) is False:
+    printResponse(operations[index], statusess[2], "Wrong password.")
+    return False
+  if is_encrypted(folder_path, libraries, None) and index == 0:
+    printResponse(operations[index], statusess[2], "Folder already encrypted.")
+    return False
+  
+  return True
 
 
 def encrypt_folder(folder_path: str, password: str, libraries: list) -> None:
 
-  if libraries is None:
-    print("Wrong password.")
-    return
-  if is_encrypted(folder_path, libraries, None):
-    print("Folder already encrypted.")
+  if shouldNext(libraries, folder_path, 0) is False:
     return
   
   count_files(folder_path)
@@ -155,7 +195,7 @@ def encrypt_folder(folder_path: str, password: str, libraries: list) -> None:
           with open(file_path, 'wb') as f:
             f.write(encrypted_data)
           encrypt_filename(fernet, file, file_path, root)
-          send_processed_items()
+          send_processed_items(operations[0])
       if current_folder != folder_base_name:
         new_folder_name = encrypt_filename(fernet, current_folder, root, os.path.dirname(root))
         folders_excluded.append(new_folder_name)
@@ -182,11 +222,7 @@ def encrypt_folder(folder_path: str, password: str, libraries: list) -> None:
 
 def decrypt_folder(folder_path: str, password: str, libraries: list):
 
-  if libraries is None:
-    print("Wrong password.")
-    return
-  if is_encrypted(folder_path, libraries, 0) is False:
-    print("Folder not encrypted.")
+  if shouldNext(libraries, folder_path, 1) is False:
     return
   
   count_files(folder_path)
@@ -214,12 +250,49 @@ def decrypt_folder(folder_path: str, password: str, libraries: list):
           with open(file_path, 'wb') as f:
             f.write(decrypted_data)
           decrypt_filename(fernet, file, file_path, root)
-          send_processed_items()
+          send_processed_items(operations[1])
       decrypt_filename(fernet, folder_name, root, os.path.dirname(root))
 
   # Remove the folder from the list
-  libraries.remove({'dir': folder_path, 'encrypted': True})
+  libraries = [librarie for librarie in libraries if librarie['path'] != folder_path]
   save_secret(secret, password, libraries)
+
+
+# Handle args functions
+
+
+def handleGetContent(password: str):
+  if password is not None:
+    libraries = load_secret(secret, password)
+    if isValidPassword(libraries) is False:
+      printResponse(operations[3], statusess[2], "Wrong password.")
+    else:
+      printResponse(operations[3], statusess[1], libraries)
+  else:
+    printResponse(operations[3], statusess[2], "Password is required.")
+
+
+def handleEncrypt(folder_path: str, password: str):
+  if folder_path is None:
+    printResponse(operations[0], statusess[2], "Folder path is required.")
+  elif password is None:
+    printResponse(operations[0], statusess[2], "Password is required.")
+  elif os.path.exists(folder_path) is False:
+    printResponse(operations[0], statusess[2], "Folder not found.")
+  else:
+    encrypt_folder(os.path.abspath(folder_path), password, load_secret(secret, password))
+
+
+def handleDencrypt(folder_path: str, password: str):
+  if folder_path is None:
+    printResponse(operations[1], statusess[2], "Folder path is required.")
+  elif password is None:
+    printResponse(operations[1], statusess[2], "Password is required.")
+  elif os.path.exists(folder_path) is False:
+    printResponse(operations[1], statusess[2], "Folder not found.")
+  else:
+    decrypt_folder(os.path.abspath(folder_path), password, load_secret(secret, password))
+
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Encrypt or decrypt a folder.')
@@ -229,33 +302,12 @@ if __name__ == "__main__":
   args = parser.parse_args()
 
   if args.function == "encrypt":
-    encrypt_folder(os.path.abspath(args.folder_path), args.password, load_secret(secret, args.password))
+    handleEncrypt(args.folder_path, args.password)
   elif args.function == "decrypt":
-    decrypt_folder(os.path.abspath(args.folder_path), args.password, load_secret(secret, args.password))
+    handleDencrypt(args.folder_path, args.password)
   elif args.function == "check-librarie":
     checkLibrarie()
   elif args.function == "get-content":
-    if args.password is not None:
-      libraries = load_secret(secret, args.password)
-      if libraries is None:
-        print("Wrong password.")
-      else:
-        print(libraries)
-    else:
-      print("Password is required.")
+    handleGetContent(args.password)
   else:
-    print("Invalid function.")
-
-  # folder_path = "E:/folder-encryptor/test"
-
-  # encrypt_path = "gAAAAABljkZ8OLXfzChUToFO7cDSwL52TdF1FFURsk2y7Z-L7ZnOXA11MjA8WazxYy2FQYywBpxfaIM7FPOdcRLw1RukDgUg4w=="
-
-  # libraries = load_secret(".ext", "admin")
-  # if libraries is None:
-  #   print("Wrong password.")
-  # else:
-  #   count_files(folder_path)
-
-  #   encrypt_folder(folder_path, "admin", libraries)
-
-  #   # decrypt_folder(folder_path.replace("test", "")+encrypt_path, "admin", libraries)
+    printResponse(operations[0], statusess[2], "Invalid function.")
