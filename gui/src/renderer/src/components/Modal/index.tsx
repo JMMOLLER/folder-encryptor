@@ -11,7 +11,7 @@ type ModalAddProps = {
   setModalProps: (modalProps: ModalProps) => void
   operation: Operation
   setOperation: (operation: Operation) => void
-  setLibraries: (libraries: Librarie[]) => void
+  setLibraries: (libraries: Library[]) => void
 }
 
 const ModalAdd: React.FC<ModalAddProps> = ({

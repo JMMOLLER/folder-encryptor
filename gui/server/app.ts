@@ -79,12 +79,12 @@ const handleRequest = ({ type, folder_path, password }: Msg): void => {
   ])
 
   python.stdout.on('data', (data) => {
+    console.log(data.toString())
     if (type === 'check-librarie') {
       const res = data.toString().toLowerCase()
       wsIns?.send(renderResponse('success', 'complete', 'check-librarie', /true/i.test(res)))
     } else if (type === 'get-content') {
       const res = pythonArrayToJs(data.toString())
-      console.log(data.toString())
       wsIns?.send(renderResponse('success', 'complete', 'get-content', res))
     } else {
       const progress = parseInt(data.toString())
@@ -97,6 +97,7 @@ const handleRequest = ({ type, folder_path, password }: Msg): void => {
   })
 
   python.stderr.on('data', (data) => {
+    console.error(data.toString())
     wsIns?.send(renderResponse('error', 'complete', data.toString(), null))
   })
 }

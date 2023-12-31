@@ -3,8 +3,8 @@ import Nav from './components/Nav'
 import ModalAdd from './components/Modal'
 import toast, { Toaster } from 'react-hot-toast'
 import { PasswordContext } from './Context'
-import { CardItem } from './components/CardItem'
-import { Flex } from 'antd'
+import { Main } from './components/Main/Main'
+import { createWsConnection } from './utils/createWsConnection'
 
 function App(): JSX.Element {
   const [operation, setOperation] = useState<Operation>('create-password')
@@ -27,12 +27,8 @@ function App(): JSX.Element {
   }
 
   useEffect(() => {
-    const socket = new WebSocket('ws://localhost:8421/socket.io')
-    socket.addEventListener('open', () => {
-      console.log('Conectado al WebSocket')
-      socket.send(JSON.stringify({ type: 'check-librarie', folder_path: '', password: '' }))
-    })
-    socket.addEventListener('message', (event) => {
+    const msgToEmit: MsgSocket = { type: 'check-librarie', folder_path: '', password: '' }
+    const onMessage = (event: MessageEvent): void => {
       const res: WsResponse = JSON.parse(event.data)
       if (res.type === 'success' && res.data) {
         setModalProps({
@@ -49,17 +45,14 @@ function App(): JSX.Element {
         })
         setOperation('create-password')
       }
-    })
+    }
+    createWsConnection({ msgToEmit, onMessage })
   }, [])
 
   useEffect(() => {
     if (operation === 'get-content') {
-      const socket = new WebSocket('ws://localhost:8421/socket.io')
-      socket.addEventListener('open', () => {
-        console.log('Conectado al WebSocket')
-        socket.send(JSON.stringify({ type: 'get-content', folder_path: '', password }))
-      })
-      socket.addEventListener('message', (event) => {
+      const msg: MsgSocket = { type: 'get-content', folder_path: '', password }
+      const handleMessage = (event: MessageEvent): void => {
         try {
           const res: WsResponse = JSON.parse(event.data)
           if (res.type === 'success' && Array.isArray(res.data)) setLibraries(res.data)
@@ -67,39 +60,18 @@ function App(): JSX.Element {
         } catch (error) {
           console.error(error)
         }
-      })
+      }
+
+      createWsConnection({ msgToEmit: msg, onMessage: handleMessage })
     }
   }, [operation])
 
-  const [libraries, setLibraries] = useState<Array<Librarie> | null>(null)
-
-  const [listLoading, setListLoading] = useState(true)
-
-  useEffect(() => {
-    if (libraries !== null) {
-      console.log(libraries)
-      setListLoading(false)
-    }
-  }, [libraries])
+  const [libraries, setLibraries] = useState<Array<Library> | null>(null)
 
   return (
     <PasswordContext.Provider value={{ userPass: password, setUserPass: setPassword }}>
       <Nav modalProps={modalProps} setModalProps={setModalProps} setOperation={setOperation} />
-      <Flex
-        wrap="wrap"
-        flex={1}
-        gap={16}
-        style={{ alignContent: 'flex-start' }}
-        className="container"
-      >
-        {listLoading
-          ? Array(3)
-              .fill({})
-              .map((_, index) => <CardItem key={index} item={_} listLoading />)
-          : libraries?.map((item, index) => (
-              <CardItem item={item} listLoading={listLoading} key={index}></CardItem>
-            ))}
-      </Flex>
+      <Main libraries={libraries} />
       <Toaster position="bottom-right" reverseOrder={false} />
       {modalProps.showModal && (
         <ModalAdd

@@ -20,7 +20,7 @@ interface PasswordContextValue {
   setUserPass: React.Dispatch<React.SetStateAction<string>>
 }
 
-interface Librarie {
+interface Library {
   currentName: string
   originalName: string
   timestamp: number
@@ -38,5 +38,5 @@ type WsResponse = {
   type: 'error' | 'success'
   status: 'complete' | 'pending'
   msg: string
-  data: Array<Librarie> | boolean | number | null
+  data: Array<Library> | boolean | number | null
 }
