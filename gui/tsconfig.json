@@ -1,7 +1,8 @@
 {
-  "files": [],
+  "files": ["server/types.d.ts"],
   "references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.web.json" }],
   "compilerOptions": {
     "esModuleInterop": true
-  }
+  },
+  "include": ["server/**/*", "server/**/*.tsx", "server/**/*.ts", "server/**/*.d.ts"]
 }
