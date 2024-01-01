@@ -11,13 +11,8 @@ const port = 8421
 
 let wsIns: WS | null = null
 
-type Operation =
-  | 'encrypt'
-  | 'decrypt'
-  | 'validate-password'
-  | 'create-password'
-  | 'get-content'
-  | 'check-librarie'
+type Operation = 'encrypt' | 'decrypt' | 'get-content' | 'check-librarie'
+type States = 'complete' | 'pending' | 'error'
 
 type Msg = {
   folder_path: string
@@ -25,11 +20,25 @@ type Msg = {
   type: Operation
 }
 
-type Response = {
+type WsResponse = {
   type: 'error' | 'success'
-  status: 'complete' | 'pending'
+  status: States
   msg: string
-  data: Array<unknown> | boolean | number | null
+  data: unknown
+}
+
+type PythonResponse = {
+  operation: Operation
+  status: States
+  data: Array<Secret> | boolean | number | null | string
+}
+
+type Secret = {
+  path: string
+  encrypted: boolean
+  timestamp: number
+  currentName: string
+  originalName: string
 }
 
 app.use(
@@ -59,17 +68,17 @@ app.ws('/socket.io', (ws) => {
 })
 
 function renderResponse(
-  type: Response['type'],
-  status: Response['status'],
-  msg: Response['msg'],
-  data: Response['data']
+  type: WsResponse['type'],
+  status: WsResponse['status'],
+  msg: WsResponse['msg'],
+  data: WsResponse['data']
 ): string {
   return JSON.stringify({ type, status, msg, data })
 }
 
 const handleRequest = ({ type, folder_path, password }: Msg): void => {
   const python = spawn('python', [
-    'script/updated.py',
+    'script/main.py',
     '--function',
     type,
     '--folder_path',
@@ -78,39 +87,24 @@ const handleRequest = ({ type, folder_path, password }: Msg): void => {
     password
   ])
 
-  python.stdout.on('data', (data) => {
-    console.log(data.toString())
-    if (type === 'check-librarie') {
-      const res = data.toString().toLowerCase()
-      wsIns?.send(renderResponse('success', 'complete', 'check-librarie', /true/i.test(res)))
-    } else if (type === 'get-content') {
-      const res = pythonArrayToJs(data.toString())
-      wsIns?.send(renderResponse('success', 'complete', 'get-content', res))
-    } else {
-      const progress = parseInt(data.toString())
-      if (progress === 100) {
-        wsIns?.send(renderResponse('success', 'complete', 'encrypting/decrypting', progress))
-      } else {
-        wsIns?.send(renderResponse('success', 'pending', 'encrypting/decrypting', progress))
-      }
-    }
-  })
+  python.stdout.on('data', (data) => handleResponse(JSON.parse(data.toString())))
 
-  python.stderr.on('data', (data) => {
-    console.error(data.toString())
-    wsIns?.send(renderResponse('error', 'complete', data.toString(), null))
-  })
+  python.stderr.on('data', (data) => handleError(data.toString()))
 }
 
-function pythonArrayToJs(msg: string): Array<unknown> | null {
-  try {
-    msg = msg.replace(/'/g, '"')
-    msg = msg.replace(/True/g, 'true')
-    return JSON.parse(msg)
-  } catch (e) {
-    console.error(e)
-    return null
+const handleResponse = (res: PythonResponse): void => {
+  if (res.status === 'error' && typeof res.data === 'string') {
+    wsIns?.send(renderResponse('error', 'complete', res.data.toString(), null))
+  } else if (res.status === 'pending') {
+    wsIns?.send(renderResponse('success', 'pending', res.operation, res.data))
+  } else {
+    wsIns?.send(renderResponse('success', 'complete', res.operation, res.data))
   }
+}
+
+const handleError = (data: string): void => {
+  console.error(data.toString())
+  wsIns?.send(renderResponse('error', 'complete', data.toString(), null))
 }
 
 app.listen(port, () => {

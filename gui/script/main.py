@@ -22,29 +22,20 @@ operations = [
   'check-librarie',
   'get-content',
 ]
-statusess = [
+states = [
   'pending',
   'complete',
   'error',
 ]
-jsTypes = {
-  'bool': 'boolean',
-  'int': 'number',
-  'float': 'number',
-  'str': 'string',
-  'list': 'Array',
-  'dict': 'Object'
-}
 
 
 def checkLibrarie():
   res = os.path.exists(secret)
-  printResponse(operations[2], statusess[1], res)
+  printResponse(operations[2], states[1], res)
 
 
 def printResponse(operation: str, status: str, data:  str | list | bool | float):
-  dataType = jsTypes.get(type(data).__name__)
-  print(json.dumps({'operation': operation, 'status': status, 'dataType': dataType, 'data': data}))
+  print(json.dumps({'operation': operation, 'status': status, 'data': data}))
   sys.stdout.flush() # important - otherwise the output will be buffered
 
 
@@ -134,9 +125,9 @@ def send_processed_items(operation: str):
   global processed_items
   processed_items += 1
   percentage = (processed_items / total_items) * 100
-  status = statusess[0]
+  status = states[0]
   if percentage == 100:
-    status = statusess[1]
+    status = states[1]
   printResponse(operation, status, percentage)
 
 
@@ -148,14 +139,14 @@ def isValidPassword(libraries: list):
 
 def shouldNext(libraries: list, folder_path: str, index: int):
   if index not in [0, 1]:
-    printResponse(operations[0], statusess[2], "Invalid process.")
+    printResponse(operations[0], states[2], "Invalid process.")
     return False
 
   if isValidPassword(libraries) is False:
-    printResponse(operations[index], statusess[2], "Wrong password.")
+    printResponse(operations[index], states[2], "Wrong password.")
     return False
   if is_encrypted(folder_path, libraries, None) and index == 0:
-    printResponse(operations[index], statusess[2], "Folder already encrypted.")
+    printResponse(operations[index], states[2], "Folder already encrypted.")
     return False
   
   return True
@@ -265,31 +256,31 @@ def handleGetContent(password: str):
   if password is not None:
     libraries = load_secret(secret, password)
     if isValidPassword(libraries) is False:
-      printResponse(operations[3], statusess[2], "Wrong password.")
+      printResponse(operations[3], states[2], "Wrong password.")
     else:
-      printResponse(operations[3], statusess[1], libraries)
+      printResponse(operations[3], states[1], libraries)
   else:
-    printResponse(operations[3], statusess[2], "Password is required.")
+    printResponse(operations[3], states[2], "Password is required.")
 
 
 def handleEncrypt(folder_path: str, password: str):
   if folder_path is None:
-    printResponse(operations[0], statusess[2], "Folder path is required.")
+    printResponse(operations[0], states[2], "Folder path is required.")
   elif password is None:
-    printResponse(operations[0], statusess[2], "Password is required.")
+    printResponse(operations[0], states[2], "Password is required.")
   elif os.path.exists(folder_path) is False:
-    printResponse(operations[0], statusess[2], "Folder not found.")
+    printResponse(operations[0], states[2], "Folder not found.")
   else:
     encrypt_folder(os.path.abspath(folder_path), password, load_secret(secret, password))
 
 
 def handleDencrypt(folder_path: str, password: str):
   if folder_path is None:
-    printResponse(operations[1], statusess[2], "Folder path is required.")
+    printResponse(operations[1], states[2], "Folder path is required.")
   elif password is None:
-    printResponse(operations[1], statusess[2], "Password is required.")
+    printResponse(operations[1], states[2], "Password is required.")
   elif os.path.exists(folder_path) is False:
-    printResponse(operations[1], statusess[2], "Folder not found.")
+    printResponse(operations[1], states[2], "Folder not found.")
   else:
     decrypt_folder(os.path.abspath(folder_path), password, load_secret(secret, password))
 
@@ -310,4 +301,4 @@ if __name__ == "__main__":
   elif args.function == "get-content":
     handleGetContent(args.password)
   else:
-    printResponse(operations[0], statusess[2], "Invalid function.")
+    printResponse(operations[0], states[2], "Invalid function.")
