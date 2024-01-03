@@ -4,8 +4,6 @@ import deleteAnimation from '../../assets/lotties/delete.json'
 import { useEffect } from 'react'
 import { Deferred } from '@renderer/utils/DeferredPromise'
 import { usePassworContext } from '@renderer/hooks/Context'
-import { useNotify } from '@renderer/hooks/useNotify'
-import { ToastContent } from '../ToastContent'
 
 const style = {
   height: 33
@@ -18,16 +16,14 @@ const lottieOptions: LottieOptions = {
 
 type LottieComponentProps = {
   setOperation: (input: LocalReq) => void
-  operation: LocalReq
   item: Library
 } 
 
-export function UnlockAnim({ item, setOperation, operation }: LottieComponentProps): React.ReactElement {
+export function UnlockAnim({ item, setOperation }: LottieComponentProps): React.ReactElement {
   const options = { ...lottieOptions }
   options.animationData = lockAnimation
 
   const { userPass } = usePassworContext()
-  const notify = useNotify()
 
   const { View, animationContainerRef, play, setDirection, goToAndStop, getDuration } = useLottie(
     options,
@@ -48,7 +44,6 @@ export function UnlockAnim({ item, setOperation, operation }: LottieComponentPro
       play()
       const deferred = new Deferred()
       setOperation({ folder_path: item.path, type: 'decrypt', deferredInstance: deferred, password: userPass })
-      notify(deferred.promise, <ToastContent operation={operation} />)
     }
     animationContainerRef.current?.addEventListener('click', handleClick)
   }, [item])

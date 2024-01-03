@@ -5,10 +5,9 @@ import { useEffect, useState } from 'react'
 interface MainProps {
   libraries: Library[] | null
   setOperation: (input: LocalReq) => void
-  operation: LocalReq
 }
 
-export function Main({ libraries, setOperation, operation }: MainProps): React.ReactElement {
+export function Main({ libraries, setOperation }: MainProps): React.ReactElement {
   const [listLoading, setListLoading] = useState(true)
 
   useEffect(() => {
@@ -23,13 +22,14 @@ export function Main({ libraries, setOperation, operation }: MainProps): React.R
       wrap="wrap"
       flex={1}
       gap={16}
-      style={{ alignContent: 'flex-start' }}
+      align='flex-start'
+      justify='space-around'
       className="container"
     >
       {listLoading ?
-        Array(3).fill({}).map((_, i) => <CardItem item={_} setOperation={setOperation} listLoading={listLoading} operation={operation} key={i}></CardItem>)
+        Array(3).fill({}).map((_, i) => <CardItem item={_} setOperation={setOperation} listLoading={listLoading} key={i}></CardItem>)
         : libraries?.map((item, i) => (
-          <CardItem item={item} setOperation={setOperation} listLoading={listLoading} operation={operation} key={i}></CardItem>
+          <CardItem item={item} setOperation={setOperation} listLoading={listLoading} key={i}></CardItem>
         )) }
     </Flex>
   )

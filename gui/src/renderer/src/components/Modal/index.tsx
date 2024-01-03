@@ -3,7 +3,6 @@ import { useEffect, useRef } from 'react'
 import { usePassworContext } from '@renderer/hooks/Context'
 import { Button } from 'antd'
 import { useNotify } from '@renderer/hooks/useNotify'
-import { ToastContent } from '../ToastContent'
 import './index.css'
 
 type ModalAddProps = {
@@ -48,7 +47,6 @@ const ModalAdd: React.FC<ModalAddProps> = ({ setModalOptions, options, setLibrar
         deferredInstance: deferred
       }
       setOperation(op)
-      notify(deferred.promise, <ToastContent operation={op} />)
     } else if (options.role === 'validate-password') {
       const op: LocalReq = {
         type: 'get-content',
@@ -57,7 +55,6 @@ const ModalAdd: React.FC<ModalAddProps> = ({ setModalOptions, options, setLibrar
         deferredInstance: deferred
       }
       setOperation(op)
-      notify(deferred.promise, <ToastContent operation={op} />)
     }
 
     setModalOptions({ ...options, showModal: false })

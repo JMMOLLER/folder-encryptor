@@ -6,8 +6,11 @@ import { createWsConnection } from './utils/createWsConnection'
 import { PasswordContext } from './hooks/Context'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import { useNotify } from './hooks/useNotify'
+import { ToastContent } from './components/ToastContent'
 
 function App(): JSX.Element {
+  const notify = useNotify()
   const [password, setPassword] = useState<string>('')
   const [libraries, setLibraries] = useState<Array<Library> | null>(null)
   const [operation, setOperation] = useState<LocalReq>({
@@ -70,7 +73,9 @@ function App(): JSX.Element {
         }
       }
 
-      createWsConnection({ msgToEmit: msg, onMessage: handleMessage })
+      const socket = createWsConnection({ msgToEmit: msg, onMessage: handleMessage })
+      if (!operation.deferredInstance) return
+      notify(operation.deferredInstance?.promise, <ToastContent operation={operation} ws={socket}/>)
     } else if (operation.type === 'encrypt' || operation.type === 'decrypt') {
       const msg: MsgSocket = {
         type: operation.type,
@@ -80,9 +85,11 @@ function App(): JSX.Element {
       const handleMessage = async (event: MessageEvent): Promise<void> => {
         try {
           const res: WsResponse = JSON.parse(event.data)
-          if (res.type === 'success') {
+
+          if (res.type === 'success' && res.status === 'complete') {
             operation.deferredInstance?.resolve(res.type)
-          } else {
+          } else if(res.type === 'error' && res.status === 'complete') {
+            console.error(res.msg)
             operation.deferredInstance?.reject(res.type)
           }
           if (res.status === 'complete') {
@@ -95,17 +102,25 @@ function App(): JSX.Element {
           }
         } catch (error) {
           console.error(error)
+          setOperation({
+            type: 'get-content',
+            folder_path: '',
+            password: operation.password,
+            deferredInstance: null
+          })
         }
       }
 
-      createWsConnection({ msgToEmit: msg, onMessage: handleMessage })
+      const socket = createWsConnection({ msgToEmit: msg, onMessage: handleMessage })
+      if (!operation.deferredInstance) return
+      notify(operation.deferredInstance?.promise, <ToastContent operation={operation} ws={socket}/>)
     }
   }, [operation])
 
   return (
     <PasswordContext.Provider value={{ userPass: password, setUserPass: setPassword }}>
       <Nav modalProps={modalProps} setModalProps={setModalProps} />
-      <Main libraries={libraries} setOperation={setOperation} operation={operation} />
+      <Main libraries={libraries} setOperation={setOperation} />
       <ToastContainer />
       <ModalAdd
         options={modalProps}

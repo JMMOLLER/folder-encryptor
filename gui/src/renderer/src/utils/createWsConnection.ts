@@ -3,7 +3,7 @@ interface CreateWsConnectionProps {
   onMessage: (event: MessageEvent) => void
 }
 
-export function createWsConnection({ msgToEmit: msg, onMessage }: CreateWsConnectionProps): void {
+export function createWsConnection({ msgToEmit: msg, onMessage }: CreateWsConnectionProps): WebSocket {
   const socket = new WebSocket('ws://localhost:8421/socket.io')
 
   socket.addEventListener('open', () => {
@@ -12,11 +12,11 @@ export function createWsConnection({ msgToEmit: msg, onMessage }: CreateWsConnec
   })
 
   socket.addEventListener('message', (e) => onMessage(e))
+
+  return socket
 }
 
-export function suscribeWsConnection(onMessage: CreateWsConnectionProps["onMessage"]){
-  const socket = new WebSocket('ws://localhost:8421/socket.io')
-
+export function suscribeWsConnection(socket: WebSocket, onMessage: CreateWsConnectionProps["onMessage"]){
   socket.addEventListener('open', () => {
     console.log('Suscrito al WebSocket')
   })

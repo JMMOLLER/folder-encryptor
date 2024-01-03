@@ -1,20 +1,21 @@
-import { suscribeWsConnection } from "@renderer/utils/createWsConnection"
-import { useEffect, useState } from "react"
+import { suscribeWsConnection } from '@renderer/utils/createWsConnection'
+import { useEffect, useState } from 'react'
 
 type ToastContentProps = {
   operation: LocalReq
+  ws: WebSocket
 }
 
-export function ToastContent({
-  operation
-}: ToastContentProps) {
+export function ToastContent({ operation, ws }: ToastContentProps) {
   const [text, setText] = useState('Loading...')
 
-  useEffect(() => suscribeWsConnection(handleMessage), [operation])
+  useEffect(() => suscribeWsConnection(ws, handleMessage), [])
 
   const handleMessage = async (event: MessageEvent): Promise<void> => {
     try {
+      if(operation.type === 'get-content') return
       const res: WsResponse = JSON.parse(event.data)
+      console.log("Mensaje: "+event.data.toString())
       if (res.type === 'success' && (res.msg === 'encrypt' || res.msg === 'decrypt')) {
         if (res.data === null) return
         const percent = parseFloat(res.data?.toLocaleString()).toFixed(2)
