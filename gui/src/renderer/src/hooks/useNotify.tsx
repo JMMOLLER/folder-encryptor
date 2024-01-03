@@ -8,14 +8,18 @@ const notify = (promise: IDeferred['promise'], jsx?: JSX.Element): Id => {
   }
   const toastId = toast.loading(
     jsx ? jsx : texts.loading,
-    { autoClose: 3000, position: 'bottom-right' }
+    { position: 'bottom-right', closeButton: true }
   )
 
   promise
-    .then(() =>
+    .then(() =>{
       toast.update(toastId, { render: texts.success, type: 'success', isLoading: false })
-    )
-    .catch((msg) => toast.update(toastId, { render: msg, type: 'error', isLoading: false }))
+      setTimeout(() => toast.dismiss(toastId), 3000)
+    })
+    .catch((msg) => {
+      toast.update(toastId, { render: msg, type: 'error', isLoading: false })
+      setTimeout(() => toast.dismiss(toastId), 3000)
+    })
 
   return toastId
 }
