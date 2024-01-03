@@ -1,0 +1,25 @@
+import { Id, toast } from "react-toastify"
+
+const notify = (promise: IDeferred['promise'], jsx?: JSX.Element): Id => {
+  const texts = {
+    loading: 'Loading',
+    success: 'Success',
+    error: 'Error'
+  }
+  const toastId = toast.loading(
+    jsx ? jsx : texts.loading,
+    { autoClose: 3000, position: 'bottom-right' }
+  )
+
+  promise
+    .then(() =>
+      toast.update(toastId, { render: texts.success, type: 'success', isLoading: false })
+    )
+    .catch((msg) => toast.update(toastId, { render: msg, type: 'error', isLoading: false }))
+
+  return toastId
+}
+
+const useNotify = () => notify
+
+export { useNotify }

@@ -1,17 +1,15 @@
 import './index.css'
-import propTypes from 'prop-types'
 import folder from '../../assets/icons/folder.svg'
 import add from '../../assets/icons/add.png'
 import conf from '../../assets/icons/config.svg'
 import { Button } from 'antd'
 
 interface NavProps {
-  modalProps: ModalProps
-  setModalProps: (modalProps: ModalProps) => void
-  setOperation: (operation: Operation) => void
+  modalProps: ModalOptions
+  setModalProps: (modalProps: ModalOptions) => void
 }
 
-const Nav: React.FC<NavProps> = ({ modalProps, setModalProps, setOperation }) => {
+const Nav: React.FC<NavProps> = ({ modalProps, setModalProps }) => {
   const handleShowModal = (): void => {
     setModalProps({
       ...modalProps,
@@ -19,9 +17,9 @@ const Nav: React.FC<NavProps> = ({ modalProps, setModalProps, setOperation }) =>
       isRequired: false,
       title: 'Encriptar nueva carpeta',
       textContent: 'Ingrese la ruta de la carpeta a encriptar:',
-      textLabel: 'C:/my/folder/path'
+      textLabel: 'C:/my/folder/path',
+      role: 'new-encrypt',
     })
-    setOperation('encrypt')
   }
 
   return (
@@ -37,19 +35,6 @@ const Nav: React.FC<NavProps> = ({ modalProps, setModalProps, setOperation }) =>
       </Button>
     </nav>
   )
-}
-
-Nav.propTypes = {
-  modalProps: propTypes.shape({
-    showModal: propTypes.bool.isRequired,
-    setModalProps: propTypes.func.isRequired,
-    isRequired: propTypes.bool.isRequired,
-    title: propTypes.string.isRequired,
-    textContent: propTypes.string.isRequired,
-    textLabel: propTypes.string.isRequired
-  }).isRequired,
-  setModalProps: propTypes.func.isRequired,
-  setOperation: propTypes.func.isRequired
 }
 
 export default Nav

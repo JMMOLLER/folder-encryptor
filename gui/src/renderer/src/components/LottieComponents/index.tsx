@@ -2,6 +2,10 @@ import { LottieOptions, useLottie } from 'lottie-react'
 import lockAnimation from '../../assets/lotties/lock.json'
 import deleteAnimation from '../../assets/lotties/delete.json'
 import { useEffect } from 'react'
+import { Deferred } from '@renderer/utils/DeferredPromise'
+import { usePassworContext } from '@renderer/hooks/Context'
+import { useNotify } from '@renderer/hooks/useNotify'
+import { ToastContent } from '../ToastContent'
 
 const style = {
   height: 33
@@ -12,26 +16,42 @@ const lottieOptions: LottieOptions = {
   autoplay: false
 }
 
-export function UnlockAnim(): React.ReactElement {
+type LottieComponentProps = {
+  setOperation: (input: LocalReq) => void
+  operation: LocalReq
+  item: Library
+} 
+
+export function UnlockAnim({ item, setOperation, operation }: LottieComponentProps): React.ReactElement {
   const options = { ...lottieOptions }
   options.animationData = lockAnimation
+
+  const { userPass } = usePassworContext()
+  const notify = useNotify()
 
   const { View, animationContainerRef, play, setDirection, goToAndStop, getDuration } = useLottie(
     options,
     style
   )
 
-  const handleClick = (): void => {
-    console.log('decrypt')
-    play()
-  }
-
   useEffect(() => {
     setDirection(-1)
     const frames = getDuration(true) ?? 20
     goToAndStop(frames - 20, true)
-    animationContainerRef.current?.addEventListener('click', handleClick)
   }, [animationContainerRef])
+
+  useEffect(()=> {
+    if(Object.keys(item).length === 0) return
+    console.log("Lottie: "+ JSON.stringify(item));
+    const handleClick = (): void => {
+      console.log('decrypt')
+      play()
+      const deferred = new Deferred()
+      setOperation({ folder_path: item.path, type: 'decrypt', deferredInstance: deferred, password: userPass })
+      notify(deferred.promise, <ToastContent operation={operation} />)
+    }
+    animationContainerRef.current?.addEventListener('click', handleClick)
+  }, [item])
 
   return View
 }

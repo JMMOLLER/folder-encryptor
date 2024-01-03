@@ -1,9 +1,9 @@
-export class Deferred<T> {
-  promise: Promise<T>
-  resolve!: (value: T | PromiseLike<T>) => void
-  reject!: (reason?: unknown) => void
+export class Deferred {
+  promise: Promise<string>
+  resolve!: (value: string | PromiseLike<string>) => void
+  reject!: (reason?: string) => void
   constructor() {
-    this.promise = new Promise<T>((resolve, reject) => {
+    this.promise = new Promise<string>((resolve, reject) => {
       // Asigna los métodos resolve y reject al objeto
       this.resolve = resolve
       this.reject = reject

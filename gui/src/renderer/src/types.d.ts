@@ -1,23 +1,39 @@
-type ModalProps = {
+type ModalOptions = {
   showModal: boolean
-  setModalProps: (props: ModalProps) => void
-  isRequired: boolean
-  title: string
+  setModalProps: (props: ModalOptions) => void
   textContent: string
+  isRequired: boolean
   textLabel: string
+  title: string
+  role: LocalOperation
 }
 
-type Operation =
-  | 'encrypt'
-  | 'decrypt'
+type ServerOperation = 'encrypt' | 'decrypt' | 'get-content' | 'check-librarie'
+
+type LocalOperation =
+  | 'new-encrypt'
+  | 'new-decrypt'
   | 'validate-password'
   | 'create-password'
   | 'get-content'
   | 'check-librarie'
 
-interface PasswordContextValue {
+type LocalReq = {
+  type: 'encrypt' | 'decrypt' | 'get-content' | null
+  password: string
+  folder_path: string
+  deferredInstance: IDeferred | null
+}
+
+interface IDeferred {
+  promise: Promise<string>
+  resolve: (value: string | PromiseLike<string>) => void
+  reject: (reason?: string) => void
+}
+
+type PasswordContextValue = {
   userPass: string
-  setUserPass: React.Dispatch<React.SetStateAction<string>>
+  setUserPass: (pass: string) => void
 }
 
 interface Library {
@@ -29,7 +45,7 @@ interface Library {
 }
 
 type MsgSocket = {
-  type: Operation
+  type: ServerOperation
   folder_path: string
   password: string
 }
@@ -37,6 +53,6 @@ type MsgSocket = {
 type WsResponse = {
   type: 'error' | 'success'
   status: 'complete' | 'pending'
-  msg: string
+  msg: ServerOperation | string
   data: Array<Library> | boolean | number | null
 }

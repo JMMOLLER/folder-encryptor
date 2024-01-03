@@ -2,7 +2,7 @@ import { createContext, useContext, useState } from 'react'
 
 export const PasswordContext = createContext<PasswordContextValue | null>(null)
 
-export const PasswordProvider = ({ children }: { children: React.ReactNode }): unknown => {
+export const PasswordProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const [userPass, setUserPass] = useState('')
 
   return (

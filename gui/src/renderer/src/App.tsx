@@ -1,30 +1,30 @@
 import { useEffect, useState } from 'react'
 import Nav from './components/Nav'
 import ModalAdd from './components/Modal'
-import toast, { Toaster } from 'react-hot-toast'
-import { PasswordContext } from './Context'
 import { Main } from './components/Main/Main'
 import { createWsConnection } from './utils/createWsConnection'
+import { PasswordContext } from './hooks/Context'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 function App(): JSX.Element {
-  const [operation, setOperation] = useState<Operation>('create-password')
   const [password, setPassword] = useState<string>('')
-  const [modalProps, setModalProps] = useState<ModalProps>({
+  const [libraries, setLibraries] = useState<Array<Library> | null>(null)
+  const [operation, setOperation] = useState<LocalReq>({
+    type: null,
+    password: '',
+    folder_path: '',
+    deferredInstance: null
+  })
+  const [modalProps, setModalProps] = useState<ModalOptions>({
     showModal: false,
-    setModalProps: (modalProps: ModalProps): void => setModalProps({ ...modalProps }),
+    setModalProps: (p: ModalOptions): void => setModalProps({ ...p }),
     isRequired: true,
     title: 'Cree una contraseña',
     textContent: 'Cree una contraseña para desencriptar o encriptar una carpeta:',
-    textLabel: 'Password'
+    textLabel: 'Password',
+    role: 'check-librarie'
   })
-
-  const notify = (promise: Promise<string>): Promise<string> | undefined => {
-    return toast.promise(promise, {
-      loading: 'Loading',
-      success: 'sucess',
-      error: 'error'
-    })
-  }
 
   useEffect(() => {
     const msgToEmit: MsgSocket = { type: 'check-librarie', folder_path: '', password: '' }
@@ -35,28 +35,64 @@ function App(): JSX.Element {
           ...modalProps,
           title: 'Ingrese la contraseña',
           textContent: 'Ingrese la contraseña para desencriptar o encriptar una carpeta:',
-          showModal: true
+          showModal: true,
+          isRequired: true,
+          role: 'validate-password'
         })
-        setOperation('validate-password')
       } else {
         setModalProps({
           ...modalProps,
           showModal: true
         })
-        setOperation('create-password')
       }
     }
     createWsConnection({ msgToEmit, onMessage })
   }, [])
 
   useEffect(() => {
-    if (operation === 'get-content') {
-      const msg: MsgSocket = { type: 'get-content', folder_path: '', password }
+    if (!operation.type) return
+
+    if (operation.type === 'get-content') {
+      const msg: MsgSocket = { type: operation.type, folder_path: '', password: operation.password }
       const handleMessage = (event: MessageEvent): void => {
         try {
           const res: WsResponse = JSON.parse(event.data)
-          if (res.type === 'success' && Array.isArray(res.data)) setLibraries(res.data)
-          else throw new Error(res.msg)
+          if (res.type === 'success' && Array.isArray(res.data)) {
+            setLibraries(res.data)
+            setPassword(operation.password)
+            operation.deferredInstance?.resolve(res.type)
+          } else if (res.type === 'error' && res.msg === 'Wrong password.') {
+            setModalProps({ ...modalProps, showModal: true })
+            operation.deferredInstance?.reject(res.msg)
+          } else throw new Error(res.msg)
+        } catch (error) {
+          console.error(error)
+        }
+      }
+
+      createWsConnection({ msgToEmit: msg, onMessage: handleMessage })
+    } else if (operation.type === 'encrypt' || operation.type === 'decrypt') {
+      const msg: MsgSocket = {
+        type: operation.type,
+        folder_path: operation.folder_path,
+        password: operation.password
+      }
+      const handleMessage = async (event: MessageEvent): Promise<void> => {
+        try {
+          const res: WsResponse = JSON.parse(event.data)
+          if (res.type === 'success') {
+            operation.deferredInstance?.resolve(res.type)
+          } else {
+            operation.deferredInstance?.reject(res.type)
+          }
+          if (res.status === 'complete') {
+            setOperation({
+              type: 'get-content',
+              folder_path: '',
+              password: operation.password,
+              deferredInstance: null
+            })
+          }
         } catch (error) {
           console.error(error)
         }
@@ -66,23 +102,17 @@ function App(): JSX.Element {
     }
   }, [operation])
 
-  const [libraries, setLibraries] = useState<Array<Library> | null>(null)
-
   return (
     <PasswordContext.Provider value={{ userPass: password, setUserPass: setPassword }}>
-      <Nav modalProps={modalProps} setModalProps={setModalProps} setOperation={setOperation} />
-      <Main libraries={libraries} />
-      <Toaster position="bottom-right" reverseOrder={false} />
-      {modalProps.showModal && (
-        <ModalAdd
-          modalProps={modalProps}
-          setModalProps={setModalProps}
-          notify={notify}
-          operation={operation}
-          setOperation={setOperation}
-          setLibraries={setLibraries}
-        />
-      )}
+      <Nav modalProps={modalProps} setModalProps={setModalProps} />
+      <Main libraries={libraries} setOperation={setOperation} operation={operation} />
+      <ToastContainer />
+      <ModalAdd
+        options={modalProps}
+        setOperation={setOperation}
+        setLibraries={setLibraries}
+        setModalOptions={setModalProps}
+      />
     </PasswordContext.Provider>
   )
 }
