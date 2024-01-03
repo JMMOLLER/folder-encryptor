@@ -10,7 +10,7 @@ type Msg = {
 type WsResponse = {
   type: 'error' | 'success'
   status: States
-  msg: string
+  msg: Operation | string
   data: unknown
 }
 
