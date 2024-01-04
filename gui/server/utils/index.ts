@@ -53,12 +53,12 @@ const handleRequest = (req: Msg, wsIns: WS | null): void => {
 const handleResponse = (res: PythonResponse, wsIns: WS | null): void => {
   if (res.status === 'error' && typeof res.data === 'string') {
     wsIns?.send(renderResponse('error', 'complete', res.data.toString(), null))
-    wsIns.close()
+    wsIns?.close()
   } else if (res.status === 'pending') {
     wsIns?.send(renderResponse('success', 'pending', res.operation, res.data))
   } else {
     wsIns?.send(renderResponse('success', 'complete', res.operation, res.data))
-    wsIns.close()
+    wsIns?.close()
   }
 }
 
@@ -72,6 +72,7 @@ const handleResponse = (res: PythonResponse, wsIns: WS | null): void => {
 const handleError = (data: string, wsIns: WS | null): void => {
   console.error(data.toString())
   wsIns?.send(renderResponse('error', 'complete', data.toString(), null))
+  wsIns?.close()
 }
 
 export { handleRequest }
