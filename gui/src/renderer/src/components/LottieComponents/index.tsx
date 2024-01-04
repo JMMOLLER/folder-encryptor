@@ -36,19 +36,14 @@ export function UnlockAnim({ item, setOperation }: LottieComponentProps): React.
     goToAndStop(frames - 20, true)
   }, [animationContainerRef])
 
-  useEffect(()=> {
-    if(Object.keys(item).length === 0) return
-    console.log("Lottie: "+ JSON.stringify(item));
-    const handleClick = (): void => {
-      console.log('decrypt')
-      play()
-      const deferred = new Deferred()
-      setOperation({ folder_path: item.path, type: 'decrypt', deferredInstance: deferred, password: userPass })
-    }
-    animationContainerRef.current?.addEventListener('click', handleClick)
-  }, [item])
+  const handleClick = (): void => {
+    console.log('decrypt')
+    play()
+    const deferred = new Deferred()
+    setOperation({ folder_path: item.path, type: 'decrypt', deferredInstance: deferred, password: userPass })
+  }
 
-  return View
+  return <span onClick={handleClick}>{View}</span>
 }
 
 export function DeleteAnim(): React.ReactElement {
@@ -63,7 +58,6 @@ export function DeleteAnim(): React.ReactElement {
   }
 
   useEffect(() => {
-    animationContainerRef.current?.addEventListener('click', handleClick)
     const svgElement = animationContainerRef.current?.firstElementChild as HTMLElement
     if (svgElement) {
       svgElement.style.setProperty('height', '115%', 'important')
@@ -71,5 +65,5 @@ export function DeleteAnim(): React.ReactElement {
     }
   }, [animationContainerRef])
 
-  return View
+  return <span onClick={handleClick}>{View}</span>
 }

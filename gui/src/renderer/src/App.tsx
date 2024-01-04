@@ -90,7 +90,7 @@ function App(): JSX.Element {
             operation.deferredInstance?.resolve(res.type)
           } else if(res.type === 'error' && res.status === 'complete') {
             console.error(res.msg)
-            operation.deferredInstance?.reject(res.type)
+            operation.deferredInstance?.reject(`Error: ${res.msg}`)
           }
           if (res.status === 'complete') {
             setOperation({
