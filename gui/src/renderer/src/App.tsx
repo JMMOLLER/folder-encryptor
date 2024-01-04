@@ -28,6 +28,10 @@ function App(): JSX.Element {
     textLabel: 'Password',
     role: 'check-librarie'
   })
+  const handleUnspectedError = (res: WsResponse): void => {
+    notify(Promise.reject('Error: ' + res.msg))
+    alert("Unknow error, try again or reinstall the app.\n\nError:\n"+res.msg)
+  }
 
   useEffect(() => {
     const msgToEmit: MsgSocket = { type: 'check-librarie', folder_path: '', password: '' }
@@ -42,13 +46,16 @@ function App(): JSX.Element {
           isRequired: true,
           role: 'validate-password'
         })
-      } else {
+      } else if (res.type === 'success') {
         setModalProps({
           ...modalProps,
           showModal: true
         })
+      } else {
+        handleUnspectedError(res)
       }
     }
+    
     createWsConnection({ msgToEmit, onMessage })
   }, [])
 
@@ -67,9 +74,9 @@ function App(): JSX.Element {
           } else if (res.type === 'error' && res.msg === 'Wrong password.') {
             setModalProps({ ...modalProps, showModal: true })
             operation.deferredInstance?.reject(res.msg)
-          } else throw new Error(res.msg)
+          } else handleUnspectedError(res)
         } catch (error) {
-          console.error(error)
+          handleUnspectedError({msg: 'Unknow error.'} as WsResponse)
         }
       }
 

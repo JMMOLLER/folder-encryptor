@@ -13,6 +13,10 @@ export function createWsConnection({ msgToEmit: msg, onMessage }: CreateWsConnec
 
   socket.addEventListener('message', (e) => onMessage(e))
 
+  socket.addEventListener('error', () => {
+    alert('Error while connecting to server. Please, try restart the app. If the problem persists, report this problem in: https://github.com/JMMOLLER/folder-encryptor/issues')
+  })
+
   return socket
 }
 
