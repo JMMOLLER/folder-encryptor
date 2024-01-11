@@ -1,7 +1,8 @@
 import { LottieOptions, useLottie } from 'lottie-react'
 import lockAnimation from '../../assets/lotties/lock.json'
 import deleteAnimation from '../../assets/lotties/delete.json'
-import { useEffect } from 'react'
+import hideShowAnimation from '../../assets/lotties/hide_show.json'
+import { useEffect, useState } from 'react'
 import { Deferred } from '@renderer/utils/DeferredPromise'
 import { usePassworContext } from '@renderer/hooks/Context'
 
@@ -17,7 +18,7 @@ const lottieOptions: LottieOptions = {
 type LottieComponentProps = {
   setOperation: (input: LocalReq) => void
   item: Library
-} 
+}
 
 export function UnlockAnim({ item, setOperation }: LottieComponentProps): React.ReactElement {
   const options = { ...lottieOptions }
@@ -40,7 +41,12 @@ export function UnlockAnim({ item, setOperation }: LottieComponentProps): React.
     console.log('decrypt')
     play()
     const deferred = new Deferred()
-    setOperation({ folder_path: item.path, type: 'decrypt', deferredInstance: deferred, password: userPass })
+    setOperation({
+      folder_path: item.path,
+      type: 'decrypt',
+      deferredInstance: deferred,
+      password: userPass
+    })
   }
 
   return <span onClick={handleClick}>{View}</span>
@@ -61,6 +67,40 @@ export function DeleteAnim(): React.ReactElement {
     const svgElement = animationContainerRef.current?.firstElementChild as HTMLElement
     if (svgElement) {
       svgElement.style.setProperty('height', '115%', 'important')
+      svgElement.style.setProperty('transform', 'translate3d(0px, -5px, 0px)', 'important')
+    }
+  }, [animationContainerRef])
+
+  return <span onClick={handleClick}>{View}</span>
+}
+
+export function HideShowAnim(): React.ReactElement {
+  const options = { ...lottieOptions }
+  options.animationData = hideShowAnimation
+
+  const [isHidden, setIsHidden] = useState(false)
+  const { View, animationContainerRef, goToAndPlay, setDirection, getDuration } = useLottie(
+    options,
+    style
+  )
+
+  const handleClick = (): void => {
+    console.log('hide/show')
+    if (isHidden) {
+      setDirection(-1)
+      const frames = getDuration(true) ?? 70
+      goToAndPlay(frames - 70, true)
+    } else {
+      setDirection(1)
+      goToAndPlay(0, true)
+    }
+    setIsHidden(!isHidden)
+  }
+
+  useEffect(() => {
+    const svgElement = animationContainerRef.current?.firstElementChild as HTMLElement
+    if (svgElement) {
+      svgElement.style.setProperty('height', '140%', 'important')
       svgElement.style.setProperty('transform', 'translate3d(0px, -5px, 0px)', 'important')
     }
   }, [animationContainerRef])

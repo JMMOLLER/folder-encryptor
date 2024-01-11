@@ -88,7 +88,6 @@ const ModalAdd: React.FC<ModalAddProps> = ({
             <InputField
               ref={inputRef}
               placeholder={options.textLabel}
-              autoFocus={true}
               required={true}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}

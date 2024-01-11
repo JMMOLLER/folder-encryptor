@@ -1,7 +1,7 @@
 import { Avatar, Card, Skeleton } from 'antd'
 import Meta from 'antd/es/card/Meta'
 import secureFolder from '../../assets/icons/secure-folder.svg'
-import { DeleteAnim, UnlockAnim } from '../LottieComponents'
+import { DeleteAnim, HideShowAnim, UnlockAnim } from '../LottieComponents'
 
 type CardItemProps = {
   setOperation: (input: LocalReq) => void
@@ -13,7 +13,11 @@ export function CardItem({ listLoading, item, setOperation }: CardItemProps): Re
   return (
     <Card
       style={{ width: 300, height: 'auto' }}
-      actions={[<UnlockAnim key="decrypt" item={item} setOperation={setOperation} />, <DeleteAnim key="delete" />]}
+      actions={[
+        <UnlockAnim key="decrypt" item={item} setOperation={setOperation} />,
+        <HideShowAnim key="hide/show" />,
+        <DeleteAnim key="delete" />
+      ]}
     >
       <Skeleton loading={listLoading} avatar active>
         <Meta
