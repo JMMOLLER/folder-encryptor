@@ -1,7 +1,7 @@
 import { Deferred } from '@renderer/utils/DeferredPromise'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { usePassworContext } from '@renderer/hooks/Context'
-import { Button } from 'antd'
+import { Button, Input, InputRef } from 'antd'
 import { useNotify } from '@renderer/hooks/useNotify'
 import './index.css'
 
@@ -12,11 +12,18 @@ type ModalAddProps = {
   setModalOptions: (_: ModalOptions) => void
 }
 
-const ModalAdd: React.FC<ModalAddProps> = ({ setModalOptions, options, setLibraries, setOperation }: ModalAddProps) => {
+const ModalAdd: React.FC<ModalAddProps> = ({
+  setModalOptions,
+  options,
+  setLibraries,
+  setOperation
+}: ModalAddProps) => {
   const containerModalRef = useRef<HTMLFormElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<InputRef>(null)
   const { userPass, setUserPass } = usePassworContext()
+  const [inputValue, setInputValue] = useState('')
+  const InputField = options.role.includes('password') ? Input.Password : Input
   const notify = useNotify()
 
   const handleClose = (): void => {
@@ -28,21 +35,21 @@ const ModalAdd: React.FC<ModalAddProps> = ({ setModalOptions, options, setLibrar
 
   const handleConfirm = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
-    if (!inputRef.current?.value.trim()) {
+    if (!inputRef.current?.input) return
+    if (!inputRef.current?.input.value.trim()) {
       return
     }
     const deferred = new Deferred()
-    const input = inputRef.current?.value
 
     if (options.role === 'create-password') {
-      setUserPass(input)
+      setUserPass(inputValue)
       setLibraries([])
       notify(deferred.promise)
       deferred.resolve('')
     } else if (options.role === 'new-encrypt') {
       const op: LocalReq = {
         type: 'encrypt',
-        folder_path: input,
+        folder_path: inputValue,
         password: userPass,
         deferredInstance: deferred
       }
@@ -51,7 +58,7 @@ const ModalAdd: React.FC<ModalAddProps> = ({ setModalOptions, options, setLibrar
       const op: LocalReq = {
         type: 'get-content',
         folder_path: '',
-        password: input,
+        password: inputValue,
         deferredInstance: deferred
       }
       setOperation(op)
@@ -61,13 +68,13 @@ const ModalAdd: React.FC<ModalAddProps> = ({ setModalOptions, options, setLibrar
   }
 
   useEffect(() => {
-    if(options.showModal && modalRef.current && containerModalRef.current) {
+    if (options.showModal && modalRef.current && containerModalRef.current) {
       modalRef.current.classList.remove('close')
       containerModalRef.current.classList.remove('close')
     } else if (!options.showModal && modalRef.current && containerModalRef.current) {
       containerModalRef.current.classList.add('close')
       modalRef.current.classList.add('close')
-      if (inputRef.current) inputRef.current.value = ''
+      setInputValue('')
     }
   }, [options.showModal])
 
@@ -78,8 +85,14 @@ const ModalAdd: React.FC<ModalAddProps> = ({ setModalOptions, options, setLibrar
         <div>
           <p className="textConntent">{options.textContent}</p>
           <div className="input-group">
-            <input type="text" ref={inputRef} id="path" required={true} />
-            <label htmlFor="path">{options.textLabel}</label>
+            <InputField
+              ref={inputRef}
+              placeholder={options.textLabel}
+              autoFocus={true}
+              required={true}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+            />
           </div>
         </div>
         <div className="buttons-container">

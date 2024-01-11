@@ -43,48 +43,6 @@
   width: 100px;
   height: 30px;
 }
-.input-group {
-  display: flex;
-  flex-direction: column-reverse;
-  position: relative;
-  margin-top: .9rem;
-}
-#path {
-  height: 1.9rem;
-  width: 100%;
-  outline: none;
-  border: 1px solid rgba(17, 103, 184, 0.301);
-  border-radius: 5px;
-  padding: 5px;
-}
-#path:focus {
-  border: 1px solid rgb(54, 142, 241)
-}
-#path ~ label {
-  position: absolute;
-  top: 50%;
-  left: 5px;
-  transform: translateY(-50%);
-  transition: all 0.3s ease-in-out;
-}
-#path:focus ~ label, #path:valid ~ label {
-  top: -20%;
-  left: 0;
-  font-size: .9rem;
-  color: rgb(54, 142, 241);
-  z-index: 0;
-  padding: 0 5px;
-}
-#path:focus ~ label::after, #path:valid ~ label::after {
-  content: '';
-  position: absolute;
-  left: 4px;
-  bottom: 3px;
-  width: 93%;
-  height: 1px;
-  z-index: -1;
-  background-color: rgb(255, 255, 255);
-}
 
 @keyframes fromTop {
   from {

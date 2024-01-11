@@ -55,6 +55,10 @@ a:hover {
   margin: 7px 0 !important;
 }
 
+.input-group {
+  margin: .7rem 0 0;
+}
+
 .ant-spin-nested-loading {
   min-height: 90%;
 }
