@@ -37,10 +37,17 @@ const handleRequest = (req: Msg, wsIns: WS | null): void => {
     '--password',
     req.password
   ])
+  let errorMsg = ''
 
   python.stdout.on('data', (data) => handleResponse(JSON.parse(data.toString()), wsIns))
 
-  python.stderr.on('data', (data) => handleError(data.toString(), wsIns))
+  python.stderr.on('data', (data) => {
+    errorMsg += data.toString()
+    setTimeout(() => {
+      handleError(errorMsg, wsIns)
+      errorMsg = ''
+    }, 100)
+  })
 }
 
 /**
