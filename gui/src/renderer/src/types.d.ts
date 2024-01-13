@@ -53,6 +53,6 @@ type MsgSocket = {
 type WsResponse = {
   type: 'error' | 'success'
   status: 'complete' | 'pending'
-  msg: ServerOperation | string
+  msg: ServerOperation | string | null
   data: Array<Library> | boolean | number | null
 }

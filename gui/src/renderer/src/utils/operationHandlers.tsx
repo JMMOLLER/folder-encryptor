@@ -4,9 +4,24 @@ import { ToastContent } from '@renderer/components/ToastContent'
 
 const notify = useNotify()
 
-const handleUnspectedError = (res: WsResponse): void => {
-  notify(Promise.reject('Error: ' + res.msg))
-  alert('Unknow error, try again or reinstall the app.\n\nError:\n' + res.msg)
+const handleUnspectedError = (res: WsResponse, operation?: LocalReq): void => {
+  console.error(res.msg)
+  console.log(typeof res.msg)
+  let text = ''
+
+  if (res.msg?.toString().includes('PermissionError')) {
+    text = 'Permission error, try execute the app as administrator.\n\nError:\n' + res.msg
+  } else {
+    text = 'Unknow error, try again or reinstall the app.\n\nError:\n' + res.msg
+  }
+
+  if (operation?.deferredInstance) {
+    operation.deferredInstance?.reject('Error: Unknow error.')
+  } else {
+    notify(Promise.reject('Error: Unknow error.'))
+  }
+
+  alert(text)
 }
 
 interface handleInitRequestProps {
@@ -91,8 +106,11 @@ export function handleOperationChange(props: handleOperationChangeProps): void {
         if (res.type === 'success' && res.status === 'complete') {
           operation.deferredInstance?.resolve(res.type)
         } else if (res.type === 'error' && res.status === 'complete') {
-          console.error(res.msg)
-          operation.deferredInstance?.reject(`Error: ${res.msg}`)
+          if (res.msg?.includes('Traceback')) {
+            throw new Error(res.msg)
+          } else {
+            operation.deferredInstance?.reject(`Error: ${res.msg}`)
+          }
         }
         if (res.status === 'complete') {
           setOperation({
@@ -103,7 +121,7 @@ export function handleOperationChange(props: handleOperationChangeProps): void {
           })
         }
       } catch (error) {
-        console.error(error)
+        handleUnspectedError({ msg: error } as WsResponse, operation)
         setOperation({
           type: 'get-content',
           folder_path: '',
