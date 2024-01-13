@@ -6,16 +6,16 @@ type ToastContentProps = {
   ws: WebSocket
 }
 
-export function ToastContent({ operation, ws }: ToastContentProps) {
+export function ToastContent({ operation, ws }: ToastContentProps): JSX.Element {
   const [text, setText] = useState('Loading...')
 
   useEffect(() => suscribeWsConnection(ws, handleMessage), [])
 
   const handleMessage = async (event: MessageEvent): Promise<void> => {
     try {
-      if(operation.type === 'get-content') return
+      if (operation.type === 'get-content') return
       const res: WsResponse = JSON.parse(event.data)
-      console.log("Mensaje: "+event.data.toString())
+      console.log('Mensaje: ' + event.data.toString())
       if (res.type === 'success' && (res.msg === 'encrypt' || res.msg === 'decrypt')) {
         if (res.data === null) return
         const percent = parseFloat(res.data?.toLocaleString()).toFixed(2)

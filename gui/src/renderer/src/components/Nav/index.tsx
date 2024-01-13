@@ -18,7 +18,7 @@ const Nav: React.FC<NavProps> = ({ modalProps, setModalProps }) => {
       title: 'Encriptar nueva carpeta',
       textContent: 'Ingrese la ruta de la carpeta a encriptar:',
       textLabel: 'C:/my/folder/path',
-      role: 'new-encrypt',
+      role: 'new-encrypt'
     })
   }
 
