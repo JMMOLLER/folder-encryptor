@@ -31,14 +31,16 @@ const ModalAdd: React.FC<ModalAddProps> = ({
       containerModalRef.current.classList.add('close')
       modalRef.current.classList.add('close')
     }
+
+    setModalOptions({ ...options, showModal: false })
   }
 
   const handleConfirm = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
+
     if (!inputRef.current?.input) return
-    if (!inputRef.current?.input.value.trim()) {
-      return
-    }
+    if (!inputRef.current?.input.value.trim()) return
+
     const deferred = new Deferred()
 
     if (options.role === 'create-password') {
@@ -67,6 +69,10 @@ const ModalAdd: React.FC<ModalAddProps> = ({
     setModalOptions({ ...options, showModal: false })
   }
 
+  const handelChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setInputValue(e.target.value)
+  }
+
   useEffect(() => {
     if (options.showModal && modalRef.current && containerModalRef.current) {
       modalRef.current.classList.remove('close')
@@ -90,12 +96,12 @@ const ModalAdd: React.FC<ModalAddProps> = ({
               placeholder={options.textLabel}
               required={true}
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={handelChange}
             />
           </div>
         </div>
         <div className="buttons-container">
-          <Button className="confirm" type="primary">
+          <Button className="confirm" type="primary" onClick={handleConfirm}>
             Ok
           </Button>
           <Button className="close" disabled={options.isRequired} onClick={handleClose} danger>
