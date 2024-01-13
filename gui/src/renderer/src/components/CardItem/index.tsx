@@ -66,4 +66,4 @@ function ContentDescription(item: CardItemProps['item']): React.ReactElement {
 
 const CardItemMemo = memo(CardItem)
 
-export { CardItemMemo }
+export { CardItemMemo as CardItem }

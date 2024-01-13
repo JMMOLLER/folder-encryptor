@@ -1,5 +1,5 @@
 import { Flex } from 'antd'
-import { CardItemMemo } from '../CardItem'
+import { CardItem } from '../CardItem'
 import { useEffect, useState } from 'react'
 
 interface MainProps {
@@ -30,20 +30,20 @@ export function Main({ libraries, setOperation }: MainProps): React.ReactElement
         ? Array(3)
             .fill({})
             .map((_, i) => (
-              <CardItemMemo
+              <CardItem
                 item={_}
                 setOperation={setOperation}
                 listLoading={listLoading}
                 key={i}
-              ></CardItemMemo>
+              ></CardItem>
             ))
         : libraries?.map((item, i) => (
-            <CardItemMemo
+            <CardItem
               item={item}
               setOperation={setOperation}
               listLoading={listLoading}
               key={i}
-            ></CardItemMemo>
+            ></CardItem>
           ))}
     </Flex>
   )
