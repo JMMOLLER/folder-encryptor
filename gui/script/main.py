@@ -1,6 +1,7 @@
 import argparse
 import os
 import base64
+import platform
 import sys
 import time
 
@@ -21,6 +22,8 @@ operations = [
   'decrypt',
   'check-librarie',
   'get-content',
+  'hide',
+  'show',
 ]
 states = [
   'pending',
@@ -206,7 +209,8 @@ def encrypt_folder(folder_path: str, password: str, libraries: list) -> None:
     'encrypted': True,
     'timestamp': time.time(),
     'currentName': os.path.basename(folder_path),
-    'originalName': folder_base_name
+    'originalName': folder_base_name,
+    'isHidden': False,
     })
   save_secret(secret, password, libraries)
 
@@ -249,6 +253,72 @@ def decrypt_folder(folder_path: str, password: str, libraries: list):
   save_secret(secret, password, libraries)
 
 
+def hide_folder(folder_path: str, password: str, libraries: list):
+  if shouldNext(libraries, folder_path, 1) is False:
+    return
+  
+  soName = platform.system()
+
+  if soName != "Windows" and soName != "Linux" and soName != "Darwin":
+    return printResponse(operations[4], states[2], "Unsupported OS.")
+  
+  librarie = next((lib for lib in libraries if lib['path'] == folder_path), None)
+  
+  if not librarie:
+    return printResponse(operations[4], states[2], "Folder not found in encrypted files.")
+  elif librarie['isHidden']:
+    return printResponse(operations[4], states[2], "Folder already hidden.")
+
+  if soName == "Windows":
+    os.system(f"attrib +h {folder_path}")
+  elif soName == "Linux":
+    os.system(f"mv {folder_path} .{folder_path}")
+  elif soName == "Darwin":
+    os.system(f"chflags hidden {folder_path}")
+
+  for lib in libraries:
+    if lib['path'] == folder_path:
+      lib['isHidden'] = True
+      break
+  
+  save_secret(secret, password, libraries)
+  
+  printResponse(operations[4], states[1], "Folder has been hidden successfully.")
+
+
+def show_folder(folder_path: str, password: str, libraries: list):
+  if shouldNext(libraries, folder_path, 1) is False:
+    return
+  
+  soName = platform.system()
+
+  if soName != "Windows" and soName != "Linux" and soName != "Darwin":
+    return printResponse(operations[5], states[2], "Unsupported OS.")
+  
+  librarie = next((lib for lib in libraries if lib['path'] == folder_path), None)
+  
+  if not librarie:
+    return printResponse(operations[4], states[2], "Folder not found in encrypted files.")
+  elif librarie['isHidden'] is False:
+    return printResponse(operations[4], states[2], "Folder is already showing.")
+
+  if soName == "Windows":
+    os.system(f"attrib -h {folder_path}")
+  elif soName == "Linux":
+    os.system(f"mv .{folder_path} {folder_path}")
+  elif soName == "Darwin":
+    os.system(f"chflags nohidden {folder_path}")
+
+  for lib in libraries:
+    if lib['path'] == folder_path:
+      lib['isHidden'] = False
+      break
+  
+  save_secret(secret, password, libraries)
+  
+  printResponse(operations[5], states[1], "Folder has been shown successfully.")
+
+
 # Handle args functions
 
 
@@ -285,6 +355,28 @@ def handleDencrypt(folder_path: str, password: str):
     decrypt_folder(os.path.abspath(folder_path), password, load_secret(secret, password))
 
 
+def handleHide(folder_path: str, password: str):
+  if folder_path is None:
+    printResponse(operations[4], states[2], "Folder path is required.")
+  elif os.path.exists(folder_path) is False:
+    printResponse(operations[4], states[2], "Folder not found.")
+  elif password is None:
+    printResponse(operations[4], states[2], "Password is required.")
+  else:
+    hide_folder(os.path.abspath(folder_path), password, load_secret(secret, password))
+
+
+def handleShow(folder_path: str, password: str):
+  if folder_path is None:
+    printResponse(operations[4], states[2], "Folder path is required.")
+  elif os.path.exists(folder_path) is False:
+    printResponse(operations[4], states[2], "Folder not found.")
+  elif password is None:
+    printResponse(operations[4], states[2], "Password is required.")
+  else:
+    show_folder(folder_path, password, load_secret(secret, password))
+
+
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Encrypt or decrypt a folder.')
   parser.add_argument("--function")
@@ -300,5 +392,9 @@ if __name__ == "__main__":
     checkLibrarie()
   elif args.function == "get-content":
     handleGetContent(args.password)
+  elif args.function == "hide":
+    handleHide(args.folder_path, args.password)
+  elif args.function == "show":
+    handleShow(args.folder_path, args.password)
   else:
     printResponse(operations[0], states[2], "Invalid function.")

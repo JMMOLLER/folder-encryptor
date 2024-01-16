@@ -8,7 +8,7 @@ type ModalOptions = {
   role: LocalOperation
 }
 
-type ServerOperation = 'encrypt' | 'decrypt' | 'get-content' | 'check-librarie'
+type ServerOperation = 'encrypt' | 'decrypt' | 'get-content' | 'check-librarie' | 'hide' | 'show'
 
 type LocalOperation =
   | 'new-encrypt'
