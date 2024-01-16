@@ -26,20 +26,17 @@ export function UnlockAnim({ item, setOperation }: LottieComponentProps): React.
 
   const { userPass } = usePassworContext()
 
-  const { View, animationContainerRef, play, setDirection, goToAndStop, getDuration } = useLottie(
-    options,
-    style
-  )
+  const Lottie = useLottie(options, style)
 
   useEffect(() => {
-    setDirection(-1)
-    const frames = getDuration(true) ?? 20
-    goToAndStop(frames - 20, true)
-  }, [animationContainerRef])
+    Lottie.setDirection(-1)
+    const frames = Lottie.getDuration(true) ?? 20
+    Lottie.goToAndStop(frames - 20, true)
+  }, [Lottie.animationContainerRef])
 
   const handleClick = (): void => {
     console.log('decrypt')
-    play()
+    Lottie.play()
     const deferred = new Deferred()
     setOperation({
       folder_path: item.path,
@@ -49,61 +46,83 @@ export function UnlockAnim({ item, setOperation }: LottieComponentProps): React.
     })
   }
 
-  return <span onClick={handleClick}>{View}</span>
+  return <span onClick={handleClick}>{Lottie.View}</span>
 }
 
 export function DeleteAnim(): React.ReactElement {
   const options = { ...lottieOptions }
   options.animationData = deleteAnimation
 
-  const { View, animationContainerRef, goToAndPlay } = useLottie(options, style)
+  const Lottie = useLottie(options, style)
 
   const handleClick = (): void => {
     console.log('delete')
-    goToAndPlay(0, true)
+    Lottie.goToAndPlay(0, true)
   }
 
   useEffect(() => {
-    const svgElement = animationContainerRef.current?.firstElementChild as HTMLElement
+    const svgElement = Lottie.animationContainerRef.current?.firstElementChild as HTMLElement
     if (svgElement) {
       svgElement.style.setProperty('height', '115%', 'important')
       svgElement.style.setProperty('transform', 'translate3d(0px, -5px, 0px)', 'important')
     }
-  }, [animationContainerRef])
+  }, [Lottie.animationContainerRef])
 
-  return <span onClick={handleClick}>{View}</span>
+  return <span onClick={handleClick}>{Lottie.View}</span>
 }
 
-export function HideShowAnim(): React.ReactElement {
+export function HideShowAnim({ item, setOperation }: LottieComponentProps): React.ReactElement {
   const options = { ...lottieOptions }
   options.animationData = hideShowAnimation
 
+  const { userPass } = usePassworContext()
   const [isHidden, setIsHidden] = useState(false)
-  const { View, animationContainerRef, goToAndPlay, setDirection, getDuration } = useLottie(
-    options,
-    style
-  )
+  const Lottie = useLottie(options, style)
 
   const handleClick = (): void => {
-    console.log('hide/show')
+    const operation = {
+      folder_path: item.path,
+      type: isHidden ? 'show' : 'hide',
+      password: userPass,
+      deferredInstance: null
+    } as LocalReq
+
     if (isHidden) {
-      setDirection(-1)
-      const frames = getDuration(true) ?? 70
-      goToAndPlay(frames - 70, true)
+      setOperation(operation)
     } else {
-      setDirection(1)
-      goToAndPlay(0, true)
+      setOperation(operation)
     }
+
+    runAnimation()
     setIsHidden(!isHidden)
   }
 
+  const runAnimation = (): void => {
+    if (!isHidden) {
+      Lottie.setDirection(1)
+      Lottie.goToAndPlay(0, true)
+    } else {
+      Lottie.setDirection(-1)
+      const frames = Lottie.getDuration(true) ?? 70
+      Lottie.goToAndPlay(frames - 70, true)
+    }
+  }
+
   useEffect(() => {
-    const svgElement = animationContainerRef.current?.firstElementChild as HTMLElement
+    setIsHidden(item.isHidden)
+    if (item.isHidden) {
+      const frames = Lottie.getDuration(true) ?? 70
+      Lottie.goToAndStop(frames - 70, true)
+    }
+  }, [item])
+
+  useEffect(() => {
+    const svgElement = Lottie.animationContainerRef.current?.firstElementChild as HTMLElement
     if (svgElement) {
       svgElement.style.setProperty('height', '140%', 'important')
       svgElement.style.setProperty('transform', 'translate3d(0px, -5px, 0px)', 'important')
     }
-  }, [animationContainerRef])
+  }, [Lottie.animationContainerRef])
 
-  return <span onClick={handleClick}>{View}</span>
+  return <span onClick={handleClick}>{Lottie.View}</span>
 }

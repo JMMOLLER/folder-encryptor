@@ -19,7 +19,7 @@ type LocalOperation =
   | 'check-librarie'
 
 type LocalReq = {
-  type: 'encrypt' | 'decrypt' | 'get-content' | null
+  type: 'encrypt' | 'decrypt' | 'get-content' | 'hide' | 'show' | null
   password: string
   folder_path: string
   deferredInstance: IDeferred | null
@@ -42,6 +42,7 @@ interface Library {
   timestamp: number
   encrypted: boolean
   path: string
+  isHidden: boolean
 }
 
 type MsgSocket = {
@@ -53,6 +54,6 @@ type MsgSocket = {
 type WsResponse = {
   type: 'error' | 'success'
   status: 'complete' | 'pending'
-  msg: ServerOperation | string | null
+  msg: ServerOperation | 'Wrong password.' | 'Unknow error.' | null
   data: Array<Library> | boolean | number | null
 }

@@ -134,5 +134,27 @@ export function handleOperationChange(props: handleOperationChangeProps): void {
     const socket = createWsConnection({ msgToEmit: msg, onMessage: handleMessage })
     if (!operation.deferredInstance) return
     notify(operation.deferredInstance?.promise, <ToastContent operation={operation} ws={socket} />)
+  } else if (operation.type === 'hide' || operation.type === 'show') {
+    const msg: MsgSocket = {
+      type: operation.type,
+      folder_path: operation.folder_path,
+      password: operation.password
+    }
+    const handleMessage = (event: MessageEvent): void => {
+      try {
+        const res: WsResponse = JSON.parse(event.data)
+        if (res.type === 'success') {
+          operation.deferredInstance?.resolve(res.data!.toString())
+        } else if (res.type === 'error') {
+          operation.deferredInstance?.reject(res.msg ?? 'Unknow error.')
+        }
+      } catch (error) {
+        handleUnspectedError({ msg: error } as WsResponse, operation)
+      }
+    }
+
+    const socket = createWsConnection({ msgToEmit: msg, onMessage: handleMessage })
+    if (!operation.deferredInstance) return
+    notify(operation.deferredInstance?.promise, <ToastContent operation={operation} ws={socket} />)
   }
 }

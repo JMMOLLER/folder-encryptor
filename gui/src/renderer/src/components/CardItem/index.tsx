@@ -2,7 +2,7 @@ import { Avatar, Card, Skeleton } from 'antd'
 import Meta from 'antd/es/card/Meta'
 import secureFolder from '../../assets/icons/secure-folder.svg'
 import { DeleteAnim, HideShowAnim, UnlockAnim } from '../LottieComponents'
-import { memo, useEffect } from 'react'
+import { memo } from 'react'
 import './style.css'
 
 type CardItemProps = {
@@ -12,16 +12,12 @@ type CardItemProps = {
 }
 
 function CardItem({ listLoading, item, setOperation }: CardItemProps): React.ReactElement {
-  useEffect(() => {
-    console.log(item)
-  }, [item])
-
   return (
     <Card
       style={{ width: 360, height: 'auto' }}
       actions={[
         <UnlockAnim key="decrypt" item={item} setOperation={setOperation} />,
-        <HideShowAnim key="hide/show" />,
+        <HideShowAnim key="hide/show" item={item} setOperation={setOperation} />,
         <DeleteAnim key="delete" />
       ]}
     >

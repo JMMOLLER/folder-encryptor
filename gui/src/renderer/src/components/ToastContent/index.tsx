@@ -24,7 +24,9 @@ export function ToastContent({ operation, ws }: ToastContentProps): JSX.Element 
         if (res.status === 'complete') {
           operation.deferredInstance?.resolve(res.type)
         }
-      } else throw new Error(res.msg)
+      } else if (res.type === 'success' && (res.msg === 'hide' || res.msg === 'show')) {
+        return
+      } else throw new Error(res.msg ?? 'Unknow error.')
     } catch (error) {
       console.error(error)
     }
