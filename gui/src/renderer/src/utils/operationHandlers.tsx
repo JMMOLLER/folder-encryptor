@@ -72,9 +72,17 @@ export function handleOperationChange(props: handleOperationChangeProps): void {
 
   if (!operation.type) return
 
+  let msg: MsgSocket = {
+    type: operation.type,
+    folder_path: operation.folder_path,
+    password: operation.password
+  }
+  //TODO: Verificar si es correcto los cambios y que no se esten creando varias instancias de ws
+  let handleMessage: ((event: MessageEvent) => Promise<void>) | undefined
+
   if (operation.type === 'get-content') {
-    const msg: MsgSocket = { type: operation.type, folder_path: '', password: operation.password }
-    const handleMessage = (event: MessageEvent): void => {
+    msg = { type: operation.type, folder_path: '', password: operation.password }
+    handleMessage = async (event: MessageEvent): Promise<void> => {
       try {
         const res: WsResponse = JSON.parse(event.data)
         if (res.type === 'success' && Array.isArray(res.data)) {
@@ -89,17 +97,8 @@ export function handleOperationChange(props: handleOperationChangeProps): void {
         handleUnspectedError({ msg: 'Unknow error.' } as WsResponse)
       }
     }
-
-    const socket = createWsConnection({ msgToEmit: msg, onMessage: handleMessage })
-    if (!operation.deferredInstance) return
-    notify(operation.deferredInstance?.promise, <ToastContent operation={operation} ws={socket} />)
   } else if (operation.type === 'encrypt' || operation.type === 'decrypt') {
-    const msg: MsgSocket = {
-      type: operation.type,
-      folder_path: operation.folder_path,
-      password: operation.password
-    }
-    const handleMessage = async (event: MessageEvent): Promise<void> => {
+    handleMessage = async (event: MessageEvent): Promise<void> => {
       try {
         const res: WsResponse = JSON.parse(event.data)
 
@@ -130,17 +129,8 @@ export function handleOperationChange(props: handleOperationChangeProps): void {
         })
       }
     }
-
-    const socket = createWsConnection({ msgToEmit: msg, onMessage: handleMessage })
-    if (!operation.deferredInstance) return
-    notify(operation.deferredInstance?.promise, <ToastContent operation={operation} ws={socket} />)
   } else if (operation.type === 'hide' || operation.type === 'show') {
-    const msg: MsgSocket = {
-      type: operation.type,
-      folder_path: operation.folder_path,
-      password: operation.password
-    }
-    const handleMessage = (event: MessageEvent): void => {
+    handleMessage = async (event: MessageEvent): Promise<void> => {
       try {
         const res: WsResponse = JSON.parse(event.data)
         if (res.type === 'success') {
@@ -152,9 +142,13 @@ export function handleOperationChange(props: handleOperationChangeProps): void {
         handleUnspectedError({ msg: error } as WsResponse, operation)
       }
     }
-
-    const socket = createWsConnection({ msgToEmit: msg, onMessage: handleMessage })
-    if (!operation.deferredInstance) return
-    notify(operation.deferredInstance?.promise, <ToastContent operation={operation} ws={socket} />)
   }
+
+  if (!handleMessage) {
+    throw new Error('Message handler has not been defined.')
+  }
+
+  const socket = createWsConnection({ msgToEmit: msg, onMessage: handleMessage })
+  if (!operation.deferredInstance) return
+  notify(operation.deferredInstance?.promise, <ToastContent operation={operation} ws={socket} />)
 }

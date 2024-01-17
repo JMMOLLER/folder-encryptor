@@ -13,6 +13,7 @@ const wsController = (ws: WS): void => {
       handleRequest(res, wsIns)
     } catch (e) {
       console.error(e)
+      ws.close()
     }
   })
 }
