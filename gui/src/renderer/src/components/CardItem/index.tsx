@@ -33,7 +33,7 @@ function CardItem({ listLoading, item, setOperation }: CardItemProps): React.Rea
         actions={[
           <UnlockAnim key="decrypt" item={item} setOperation={setOperation} />,
           <HideShowAnim key="hide/show" item={item} setOperation={setOperation} />,
-          <DeleteAnim key="delete" />
+          <DeleteAnim key="delete" item={item} setOperation={setOperation} />
         ]}
       >
         <Skeleton loading={listLoading} avatar active>

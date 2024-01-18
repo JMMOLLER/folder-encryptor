@@ -77,7 +77,7 @@ export function handleOperationChange(props: handleOperationChangeProps): void {
     folder_path: operation.folder_path,
     password: operation.password
   }
-  //TODO: Verificar si es correcto los cambios y que no se esten creando varias instancias de ws
+
   let handleMessage: ((event: MessageEvent) => Promise<void>) | undefined
 
   if (operation.type === 'get-content') {
@@ -97,7 +97,11 @@ export function handleOperationChange(props: handleOperationChangeProps): void {
         handleUnspectedError({ msg: 'Unknow error.' } as WsResponse)
       }
     }
-  } else if (operation.type === 'encrypt' || operation.type === 'decrypt') {
+  } else if (
+    operation.type === 'encrypt' ||
+    operation.type === 'decrypt' ||
+    operation.type === 'delete'
+  ) {
     handleMessage = async (event: MessageEvent): Promise<void> => {
       try {
         const res: WsResponse = JSON.parse(event.data)

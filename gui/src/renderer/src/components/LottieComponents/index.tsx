@@ -61,15 +61,21 @@ export function UnlockAnim({ item, setOperation }: LottieComponentProps): React.
   return <span onClick={handleClick}>{Lottie.View}</span>
 }
 
-export function DeleteAnim(): React.ReactElement {
+export function DeleteAnim({ item, setOperation }: LottieComponentProps): React.ReactElement {
   const options = { ...lottieOptions }
   options.animationData = deleteAnimation
 
   const Lottie = useLottie(options, style)
+  const { userPass } = usePassworContext()
 
   const handleClick = (): void => {
-    console.log('delete')
     Lottie.goToAndPlay(0, true)
+    setOperation({
+      folder_path: item.path,
+      type: 'delete',
+      password: userPass,
+      deferredInstance: new Deferred()
+    })
   }
 
   useEffect(() => {
