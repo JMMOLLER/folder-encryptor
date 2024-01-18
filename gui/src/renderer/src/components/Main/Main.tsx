@@ -1,6 +1,7 @@
 import { Flex } from 'antd'
 import { CardItem } from '../CardItem'
 import { useEffect, useState } from 'react'
+import { AnimatePresence } from 'framer-motion'
 
 interface MainProps {
   libraries: Library[] | null
@@ -19,32 +20,35 @@ export function Main({ libraries, setOperation }: MainProps): React.ReactElement
 
   return (
     <Flex
-      wrap="wrap"
-      flex={1}
-      gap={16}
-      align="flex-start"
-      justify="space-around"
-      className="container"
+    wrap="wrap"
+    flex={1}
+    gap={16}
+    align="flex-start"
+    style={{ alignContent: 'flex-start' }}
+    justify="space-around"
+    className="container"
     >
-      {listLoading
-        ? Array(3)
-            .fill({})
-            .map((_, i) => (
+      <AnimatePresence>
+        {listLoading
+          ? Array(3)
+              .fill({})
+              .map((_, i) => (
+                <CardItem
+                  item={_}
+                  setOperation={setOperation}
+                  listLoading={listLoading}
+                  key={i}
+                ></CardItem>
+              ))
+          : libraries?.map((item) => (
               <CardItem
-                item={_}
+                item={item}
                 setOperation={setOperation}
                 listLoading={listLoading}
-                key={i}
+                key={item.currentName}
               ></CardItem>
-            ))
-        : libraries?.map((item, i) => (
-            <CardItem
-              item={item}
-              setOperation={setOperation}
-              listLoading={listLoading}
-              key={i}
-            ></CardItem>
-          ))}
+            ))}
+      </AnimatePresence>
     </Flex>
   )
 }

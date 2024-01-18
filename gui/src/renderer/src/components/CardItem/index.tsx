@@ -1,9 +1,23 @@
-import { Avatar, Card, Skeleton } from 'antd'
 import Meta from 'antd/es/card/Meta'
 import secureFolder from '../../assets/icons/secure-folder.svg'
+import { Avatar, Card, Skeleton } from 'antd'
 import { DeleteAnim, HideShowAnim, UnlockAnim } from '../LottieComponents'
+import { motion } from 'framer-motion'
 import { memo } from 'react'
 import './style.css'
+
+const MotionDiv = motion.div
+const variants = {
+  hidden: {
+    opacity: 0
+  },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 1
+    }
+  }
+}
 
 type CardItemProps = {
   setOperation: (input: LocalReq) => void
@@ -13,22 +27,24 @@ type CardItemProps = {
 
 function CardItem({ listLoading, item, setOperation }: CardItemProps): React.ReactElement {
   return (
-    <Card
-      style={{ width: 360, height: 'auto' }}
-      actions={[
-        <UnlockAnim key="decrypt" item={item} setOperation={setOperation} />,
-        <HideShowAnim key="hide/show" item={item} setOperation={setOperation} />,
-        <DeleteAnim key="delete" />
-      ]}
-    >
-      <Skeleton loading={listLoading} avatar active>
-        <Meta
-          avatar={<Avatar src={secureFolder} />}
-          title="Información de la carpeta"
-          description={ContentDescription(item)}
-        />
-      </Skeleton>
-    </Card>
+    <MotionDiv initial='hidden' animate='visible' exit={'hidden'} layoutId={item.currentName} variants={variants}>
+      <Card
+        style={{ width: 360, height: 'auto' }}
+        actions={[
+          <UnlockAnim key="decrypt" item={item} setOperation={setOperation} />,
+          <HideShowAnim key="hide/show" item={item} setOperation={setOperation} />,
+          <DeleteAnim key="delete" />
+        ]}
+      >
+        <Skeleton loading={listLoading} avatar active>
+          <Meta
+            avatar={<Avatar src={secureFolder} />}
+            title="Información de la carpeta"
+            description={ContentDescription(item)}
+          />
+        </Skeleton>
+      </Card>
+    </MotionDiv>
   )
 }
 
