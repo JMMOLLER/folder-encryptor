@@ -8,7 +8,14 @@ type ModalOptions = {
   role: LocalOperation
 }
 
-type ServerOperation = 'encrypt' | 'decrypt' | 'get-content' | 'check-librarie' | 'hide' | 'show'
+type ServerOperation =
+  | 'encrypt'
+  | 'decrypt'
+  | 'get-content'
+  | 'check-librarie'
+  | 'hide'
+  | 'show'
+  | 'delete'
 
 type LocalOperation =
   | 'new-encrypt'
@@ -19,7 +26,7 @@ type LocalOperation =
   | 'check-librarie'
 
 type LocalReq = {
-  type: 'encrypt' | 'decrypt' | 'get-content' | 'hide' | 'show' | null
+  type: 'encrypt' | 'decrypt' | 'get-content' | 'hide' | 'show' | 'delete' | null
   password: string
   folder_path: string
   deferredInstance: IDeferred | null

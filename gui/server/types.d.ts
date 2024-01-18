@@ -1,4 +1,11 @@
-type Operation = 'encrypt' | 'decrypt' | 'get-content' | 'check-librarie' | 'hide' | 'show'
+type Operation =
+  | 'encrypt'
+  | 'decrypt'
+  | 'get-content'
+  | 'check-librarie'
+  | 'hide'
+  | 'show'
+  | 'delete'
 type States = 'complete' | 'pending' | 'error'
 
 type Msg = {

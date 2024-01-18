@@ -2,6 +2,7 @@ import argparse
 import os
 import base64
 import platform
+import subprocess
 import sys
 import time
 
@@ -24,6 +25,7 @@ operations = [
   'get-content',
   'hide',
   'show',
+  'delete',
 ]
 states = [
   'pending',
@@ -140,6 +142,10 @@ def isValidPassword(libraries: list):
   return True
 
 
+def exists_in_library(libraries: list, folder_path: str):
+  return bool(next((lib for lib in libraries if lib['path'] == folder_path), False))
+
+
 def shouldNext(libraries: list, folder_path: str, index: int):
   if index not in [0, 1]:
     printResponse(operations[0], states[2], "Invalid process.")
@@ -150,6 +156,9 @@ def shouldNext(libraries: list, folder_path: str, index: int):
     return False
   if is_encrypted(folder_path, libraries, None) and index == 0:
     printResponse(operations[index], states[2], "Folder already encrypted.")
+    return False
+  if exists_in_library(libraries, folder_path) is False and index == 1:
+    printResponse(operations[index], states[2], "Folder not found in encrypted files.")
     return False
   
   return True
@@ -324,6 +333,32 @@ def show_folder(folder_path: str, password: str, libraries: list):
   printResponse(operations[5], states[1], "Folder has been shown successfully.")
 
 
+def delete_folder(folder_path: str, password: str, libraries: list):
+  if shouldNext(libraries, folder_path, 1) is False:
+    return
+  
+  soName = platform.system()
+
+  if soName != "Windows" and soName != "Linux" and soName != "Darwin":
+    return printResponse(operations[6], states[2], "Unsupported OS.")
+
+
+  if soName == "Windows":
+    command = f'rmdir /s /q "{folder_path}"'
+    result = subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)  
+  elif soName == "Linux" or soName == "Darwin":
+    command = (f'rm -rf "{folder_path}"')
+    result = subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+
+  if result.returncode != 0:
+    return printResponse(operations[6], states[2], "Code error: " + str(result.returncode))
+  
+  # Remove the folder from the list
+  libraries = [librarie for librarie in libraries if librarie['path'] != folder_path]
+  save_secret(secret, password, libraries)
+  
+  printResponse(operations[6], states[1], "Folder has been deleted successfully.")
+
 # Handle args functions
 
 
@@ -382,6 +417,17 @@ def handleShow(folder_path: str, password: str):
     show_folder(folder_path, password, load_secret(secret, password))
 
 
+def handleDelete(folder_path: str, password: str):
+  if folder_path is None:
+    printResponse(operations[6], states[2], "Folder path is required.")
+  elif os.path.exists(folder_path) is False:
+    printResponse(operations[6], states[2], "Folder not found.")
+  elif password is None:
+    printResponse(operations[6], states[2], "Password is required.")
+  else:
+    delete_folder(folder_path, password, load_secret(secret, password))
+
+
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Encrypt or decrypt a folder.')
   parser.add_argument("--function")
@@ -401,5 +447,7 @@ if __name__ == "__main__":
     handleHide(args.folder_path, args.password)
   elif args.function == "show":
     handleShow(args.folder_path, args.password)
+  elif args.function == "delete":
+    handleDelete(args.folder_path, args.password)
   else:
     printResponse(operations[0], states[2], "Invalid function.")
