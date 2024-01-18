@@ -28,14 +28,17 @@ export function UnlockAnim({ item, setOperation }: LottieComponentProps): React.
 
   const Lottie = useLottie(options, style)
 
-  useEffect(() => {
+  const handleInitial = (): void => {
     Lottie.setDirection(-1)
     const frames = Lottie.getDuration(true) ?? 20
     Lottie.goToAndStop(frames - 20, true)
+  }
+
+  useEffect(() => {
+    handleInitial()
   }, [Lottie.animationContainerRef])
 
   const handleClick = (): void => {
-    console.log('decrypt')
     Lottie.play()
     const deferred = new Deferred()
     setOperation({
@@ -43,6 +46,15 @@ export function UnlockAnim({ item, setOperation }: LottieComponentProps): React.
       type: 'decrypt',
       deferredInstance: deferred,
       password: userPass
+    })
+    deferred.promise.catch(() => {
+      Lottie.setDirection(1)
+      Lottie.goToAndPlay(0, true)
+      const handleError = (): void => {
+        handleInitial()
+        Lottie.animationItem?.removeEventListener('complete', handleError)
+      }
+      Lottie.animationItem?.addEventListener('complete', handleError)
     })
   }
 

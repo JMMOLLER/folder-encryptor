@@ -220,6 +220,11 @@ def decrypt_folder(folder_path: str, password: str, libraries: list):
   if shouldNext(libraries, folder_path, 1) is False:
     return
   
+  item = next((lib for lib in libraries if lib['path'] == folder_path), None)
+  if item['isHidden'] is True:
+    printResponse(operations[1], states[2], "Folder must be shown to decrypt.")
+    return
+  
   count_files(folder_path)
 
   global processed_items
