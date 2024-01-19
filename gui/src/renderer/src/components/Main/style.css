@@ -22,10 +22,18 @@
   min-width: 100%;
 }
 
+.watermark-text {
+  opacity: 0;
+}
+
 .main[data-showconf="true"] > .main-content {
   flex-direction: column-reverse;
 }
-.main[data-showconf="true"] > .main-content > .conf-section {
+.main[data-showconf="false"] .watermark-text {
+  opacity: .4;
+  transition: opacity .5s ease-in;
+}
+.main[data-showconf="true"] .conf-section {
   opacity: 1;
   transition: opacity .5s ease-in;
 }
