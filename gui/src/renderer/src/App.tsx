@@ -9,6 +9,7 @@ import 'react-toastify/dist/ReactToastify.css'
 
 function App(): JSX.Element {
   const [password, setPassword] = useState<string>('')
+  const [showConf, setShowConf] = useState<boolean>(false)
   const [libraries, setLibraries] = useState<Array<Library> | null>(null)
   const [operation, setOperation] = useState<LocalReq>({
     type: null,
@@ -46,8 +47,13 @@ function App(): JSX.Element {
 
   return (
     <PasswordContext.Provider value={{ userPass: password, setUserPass: setPassword }}>
-      <Nav modalProps={modalProps} setModalProps={setModalProps} />
-      <Main libraries={libraries} setOperation={setOperation} />
+      <Nav
+        modalProps={modalProps}
+        setModalProps={setModalProps}
+        showConf={showConf}
+        setShowConf={setShowConf}
+      />
+      <Main libraries={libraries} setOperation={setOperation} showConf={showConf} />
       <ToastContainer />
       <ModalAdd
         options={modalProps}

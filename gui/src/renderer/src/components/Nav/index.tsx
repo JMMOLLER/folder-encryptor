@@ -7,10 +7,13 @@ import { Button } from 'antd'
 interface NavProps {
   modalProps: ModalOptions
   setModalProps: (modalProps: ModalOptions) => void
+  showConf: boolean
+  setShowConf: (_: boolean) => void
 }
 
-const Nav: React.FC<NavProps> = ({ modalProps, setModalProps }) => {
+const Nav: React.FC<NavProps> = ({ modalProps, setModalProps, setShowConf }) => {
   const handleShowModal = (): void => {
+    setShowConf(false)
     setModalProps({
       ...modalProps,
       showModal: true,
@@ -24,14 +27,14 @@ const Nav: React.FC<NavProps> = ({ modalProps, setModalProps }) => {
 
   return (
     <nav className="nav">
-      <Button className="icon folder-section">
+      <Button className="icon folder-section" onClick={(): void => setShowConf(false)}>
         <img src={folder} alt="folder icon" />
       </Button>
       <Button className="icon add-section" onClick={(): void => handleShowModal()}>
         <img src={add} alt="add folder" />
       </Button>
-      <Button className="icon conf-section">
-        <img src={conf} alt="add folder" />
+      <Button className="icon conf-section" onClick={(): void => setShowConf(true)}>
+        <img src={conf} alt="settings" />
       </Button>
     </nav>
   )

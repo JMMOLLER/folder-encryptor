@@ -1,0 +1,35 @@
+.main-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.main {
+  width: 100%;
+}
+
+.conf-section, .folders-section {
+  min-height: 100dvh;
+}
+.main-content > .conf-section {
+  opacity: 0;
+}
+
+
+.folders-section {
+  display: flex !important;
+  position: relative;
+  min-width: 100%;
+}
+
+.main[data-showconf="true"] > .main-content {
+  flex-direction: column-reverse;
+}
+.main[data-showconf="true"] > .main-content > .conf-section {
+  opacity: 1;
+  transition: opacity .5s ease-in;
+}
+
+.conf-section h1 {
+  text-align: center;
+}
