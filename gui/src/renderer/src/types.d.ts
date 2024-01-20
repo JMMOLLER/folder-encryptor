@@ -64,3 +64,5 @@ type WsResponse = {
   msg: ServerOperation | 'Wrong password.' | 'Unknow error.' | null
   data: Array<Library> | boolean | number | null
 }
+
+type MenuItem = Required<MenuProps>['items'][number]

@@ -38,8 +38,8 @@ export function handleInitRequest(props: handleInitRequestProps): void {
     if (res.type === 'success' && res.data) {
       setModalProps({
         ...modalProps,
-        title: 'Ingrese la contraseña',
-        textContent: 'Ingrese la contraseña para desencriptar o encriptar una carpeta:',
+        title: 'Enter the password',
+        textContent: 'Enter the password to decrypt or encrypt a folder:',
         showModal: true,
         isRequired: true,
         role: 'validate-password'

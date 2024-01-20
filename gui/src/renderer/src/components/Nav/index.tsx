@@ -1,8 +1,9 @@
 import './index.css'
-import folder from '../../assets/icons/folder.svg'
-import add from '../../assets/icons/add.png'
-import conf from '../../assets/icons/config.svg'
-import { Button } from 'antd'
+import { Menu } from 'antd'
+import Sider from 'antd/es/layout/Sider'
+import { FolderButton, AddFolder, SettingButton } from '../Buttons'
+import { useEffect, useState } from 'react'
+import { getItem } from '@renderer/utils/getItem'
 
 interface NavProps {
   modalProps: ModalOptions
@@ -12,31 +13,46 @@ interface NavProps {
 }
 
 const Nav: React.FC<NavProps> = ({ modalProps, setModalProps, setShowConf }) => {
+  const [selectedKey, setSelectedKey] = useState<string[]>(['1'])
+  const [collapsed, setCollapsed] = useState(true)
   const handleShowModal = (): void => {
     setShowConf(false)
     setModalProps({
       ...modalProps,
       showModal: true,
       isRequired: false,
-      title: 'Encriptar nueva carpeta',
-      textContent: 'Ingrese la ruta de la carpeta a encriptar:',
+      title: 'Encrypt new folder',
+      textContent: 'Enter the path of the folder to encrypt:',
       textLabel: 'C:/my/folder/path',
       role: 'new-encrypt'
     })
   }
+  const items: MenuItem[] = [
+    getItem('Folders', '1', <FolderButton />, () => setShowConf(false)),
+    getItem('Add Folder', '2', <AddFolder />, () => handleShowModal()),
+    getItem('Settings', '3', <SettingButton />, () => setShowConf(true))
+  ]
+
+  useEffect(() => {
+    if (!modalProps.showModal) setSelectedKey(['1'])
+  }, [modalProps.showModal])
 
   return (
-    <nav className="nav">
-      <Button className="icon folder-section" onClick={(): void => setShowConf(false)}>
-        <img src={folder} alt="folder icon" />
-      </Button>
-      <Button className="icon add-section" onClick={(): void => handleShowModal()}>
-        <img src={add} alt="add folder" />
-      </Button>
-      <Button className="icon conf-section" onClick={(): void => setShowConf(true)}>
-        <img src={conf} alt="settings" />
-      </Button>
-    </nav>
+    <Sider
+      className="nav"
+      collapsible
+      collapsed={collapsed}
+      onCollapse={(value) => setCollapsed(value)}
+    >
+      <Menu
+        theme="dark"
+        selectedKeys={selectedKey}
+        onSelect={(e) => setSelectedKey(e.keyPath)}
+        mode="inline"
+        items={items}
+        data-colapsed={collapsed}
+      />
+    </Sider>
   )
 }
 

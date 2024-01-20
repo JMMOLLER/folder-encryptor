@@ -1,4 +1,4 @@
-import { Flex } from 'antd'
+import { Empty, Flex } from 'antd'
 import { CardItem } from '../CardItem'
 import { ReactNode, useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -40,9 +40,7 @@ export function Main({ libraries, setOperation, showConf }: MainProps): React.Re
           ></CardItem>
         ))
     } else {
-      if (libraries?.length === 0) {
-        return <h1 className="watermark-text">No content yet</h1>
-      }
+      if (libraries?.length === 0) return <Empty />
 
       return libraries?.map((item) => (
         <CardItem

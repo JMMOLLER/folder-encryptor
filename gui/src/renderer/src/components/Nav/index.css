@@ -1,32 +1,22 @@
 .nav {
   height: 100dvh;
-  width: 8%;
-  background-color: #f1f1f1;
+}
+.ant-layout-sider-children {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  padding: 1rem 0;
   gap: 1rem;
   position: sticky;
   top: 0;
 }
 
-.nav > button {
-  border: 0;
-  width: calc(100% - 4rem);
-  padding: 0.5rem;
-  min-width: 50px;
-  min-height: 50px;
-  max-width: 80px;
-  max-height: 80px;
-  transition: background-color 0.2s ease-in-out;
+.ant-menu-item {
+  margin-bottom: .5rem !important;
 }
-.nav > button:focus {
-  background-color: rgb(156, 156, 156);
+
+.ant-menu[data-colapsed="true"] .ant-menu-item {
+  padding-inline: calc((30% - 8px) - 4px) !important;
 }
-.nav > button > img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+.ant-menu[data-colapsed="false"] .ant-menu-item {
+  gap: 5px !important;
 }

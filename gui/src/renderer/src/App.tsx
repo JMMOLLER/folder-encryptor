@@ -5,6 +5,7 @@ import { Main } from './components/Main/Main'
 import { PasswordContext } from './hooks/Context'
 import { ToastContainer } from 'react-toastify'
 import { handleInitRequest, handleOperationChange } from './utils/operationHandlers'
+import { Layout } from 'antd'
 import 'react-toastify/dist/ReactToastify.css'
 
 function App(): JSX.Element {
@@ -21,8 +22,8 @@ function App(): JSX.Element {
     showModal: false,
     setModalProps: (p: ModalOptions): void => setModalProps({ ...p }),
     isRequired: true,
-    title: 'Cree una contraseña',
-    textContent: 'Cree una contraseña para desencriptar o encriptar una carpeta:',
+    title: 'Create a password',
+    textContent: 'Create a password to decrypt or encrypt a folder:',
     textLabel: 'Password',
     role: 'check-librarie'
   })
@@ -47,20 +48,22 @@ function App(): JSX.Element {
 
   return (
     <PasswordContext.Provider value={{ userPass: password, setUserPass: setPassword }}>
-      <Nav
-        modalProps={modalProps}
-        setModalProps={setModalProps}
-        showConf={showConf}
-        setShowConf={setShowConf}
-      />
-      <Main libraries={libraries} setOperation={setOperation} showConf={showConf} />
-      <ToastContainer />
-      <ModalAdd
-        options={modalProps}
-        setOperation={setOperation}
-        setLibraries={setLibraries}
-        setModalOptions={setModalProps}
-      />
+      <Layout>
+        <Nav
+          modalProps={modalProps}
+          setModalProps={setModalProps}
+          showConf={showConf}
+          setShowConf={setShowConf}
+        />
+        <Main libraries={libraries} setOperation={setOperation} showConf={showConf} />
+        <ToastContainer />
+        <ModalAdd
+          options={modalProps}
+          setOperation={setOperation}
+          setLibraries={setLibraries}
+          setModalOptions={setModalProps}
+        />
+      </Layout>
     </PasswordContext.Provider>
   )
 }

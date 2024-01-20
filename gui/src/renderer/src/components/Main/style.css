@@ -8,13 +8,13 @@
   width: 100%;
 }
 
-.conf-section, .folders-section {
+.conf-section,
+.folders-section {
   min-height: 100dvh;
 }
 .main-content > .conf-section {
   opacity: 0;
 }
-
 
 .folders-section {
   display: flex !important;
@@ -22,20 +22,30 @@
   min-width: 100%;
 }
 
-.watermark-text {
+.ant-empty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  user-select: none;
   opacity: 0;
 }
+.ant-empty-description {
+  font-weight: 500;
+  opacity: 0.7;
+  color: gray !important;
+}
 
-.main[data-showconf="true"] > .main-content {
+.main[data-showconf='true'] > .main-content {
   flex-direction: column-reverse;
 }
-.main[data-showconf="false"] .watermark-text {
-  opacity: .4;
-  transition: opacity .5s ease-in;
-}
-.main[data-showconf="true"] .conf-section {
+.main[data-showconf='false'] .ant-empty {
   opacity: 1;
-  transition: opacity .5s ease-in;
+  transition: opacity 0.5s ease-in;
+}
+.main[data-showconf='true'] .conf-section {
+  opacity: 1;
+  transition: opacity 0.5s ease-in;
 }
 
 .conf-section h1 {

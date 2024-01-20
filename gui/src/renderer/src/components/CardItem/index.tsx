@@ -27,7 +27,13 @@ type CardItemProps = {
 
 function CardItem({ listLoading, item, setOperation }: CardItemProps): React.ReactElement {
   return (
-    <MotionDiv initial='hidden' animate='visible' exit={'hidden'} layoutId={item.currentName} variants={variants}>
+    <MotionDiv
+      initial="hidden"
+      animate="visible"
+      exit={'hidden'}
+      layoutId={item.currentName}
+      variants={variants}
+    >
       <Card
         style={{ width: 360, height: 'auto' }}
         actions={[
@@ -39,7 +45,7 @@ function CardItem({ listLoading, item, setOperation }: CardItemProps): React.Rea
         <Skeleton loading={listLoading} avatar active>
           <Meta
             avatar={<Avatar src={secureFolder} />}
-            title="Información de la carpeta"
+            title="Folder information"
             description={ContentDescription(item)}
           />
         </Skeleton>
