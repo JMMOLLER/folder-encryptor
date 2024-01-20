@@ -41,6 +41,7 @@ function CardItem({ listLoading, item, setOperation }: CardItemProps): React.Rea
           <HideShowAnim key="hide/show" item={item} setOperation={setOperation} />,
           <DeleteAnim key="delete" item={item} setOperation={setOperation} />
         ]}
+        data-loading={listLoading}
       >
         <Skeleton loading={listLoading} avatar active>
           <Meta

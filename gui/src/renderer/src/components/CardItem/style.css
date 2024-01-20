@@ -4,3 +4,7 @@
   text-overflow: ellipsis;
   max-width: 100%;
 }
+
+.ant-card[data-loading='true'] .ant-card-actions li {
+  margin: 9px 0;
+}
