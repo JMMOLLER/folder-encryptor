@@ -122,8 +122,10 @@ export function Main({ libraries, setOperation, showConf }: MainProps): React.Re
         </div>
         <div className="container conf-section">
           <h1>Settings</h1>
-          <Flex wrap="wrap" align="flex-start" justify="space-around">
-            <p>Some config</p>
+          <Flex align="flex-start" justify="center">
+            <p className="no-settings-text-temporary-watermark">
+              No settings yet, but you can reset all data to default. 🙂
+            </p>
           </Flex>
           <Popconfirm
             title="Are you sure to reset all data?"

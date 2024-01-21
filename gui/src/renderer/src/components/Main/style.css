@@ -1,3 +1,11 @@
+.no-settings-text-temporary-watermark {
+  align-self: center;
+  font-size: large;
+  font-weight: 500;
+  opacity: 0.5;
+  user-select: none;
+}
+
 .main-content {
   display: flex;
   flex-direction: column;
@@ -8,7 +16,15 @@
   width: 100%;
 }
 
-.conf-section, .folders-section {
+.conf-option-text {
+  font-size: medium;
+}
+.conf-option-text > .ant-switch {
+  margin-left: 0.5rem;
+}
+
+.conf-section,
+.folders-section {
   height: 100dvh;
   width: 100%;
 }
@@ -24,8 +40,10 @@
 }
 
 .main-content > .conf-section > .ant-flex {
+  flex-direction: column;
   flex-grow: 1;
-  padding: .5rem 0 .5rem 0;
+  padding: 0.5rem 0 0.5rem 0;
+  width: 100%;
 }
 
 .folders-section > .ant-flex {
