@@ -16,6 +16,7 @@ type ServerOperation =
   | 'hide'
   | 'show'
   | 'delete'
+  | 'reset-data'
 
 type LocalOperation =
   | 'new-encrypt'
@@ -26,7 +27,7 @@ type LocalOperation =
   | 'check-librarie'
 
 type LocalReq = {
-  type: 'encrypt' | 'decrypt' | 'get-content' | 'hide' | 'show' | 'delete' | null
+  type: 'encrypt' | 'decrypt' | 'get-content' | 'hide' | 'show' | 'delete' | 'reset-data' | null
   password: string
   folder_path: string
   deferredInstance: IDeferred | null

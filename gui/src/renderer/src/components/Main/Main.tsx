@@ -1,7 +1,9 @@
-import { Empty, Flex, Pagination } from 'antd'
 import { CardItem } from '../CardItem'
+import { Button, Empty, Flex, Pagination, Popconfirm } from 'antd'
 import { ReactNode, useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { usePassworContext } from '@renderer/hooks/Context'
+import { Deferred } from '@renderer/utils/DeferredPromise'
 import './style.css'
 
 const MotionDiv = motion.div
@@ -20,10 +22,33 @@ interface MainProps {
 }
 
 export function Main({ libraries, setOperation, showConf }: MainProps): React.ReactElement {
-  const [listLoading, setListLoading] = useState(true)
-  const [itemsPerPage, setItemsPerPage] = useState(0)
+  const [isOpen, setIsOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(0)
+  const [listLoading, setListLoading] = useState(true)
+  const [confirmLoading, setConfirmLoading] = useState(false)
+  const { userPass } = usePassworContext()
+
+  const showPopconfirm = (): void => setIsOpen(true)
+  const handleCancel = (): void => setIsOpen(false)
   const maxPageNumber = Math.ceil((libraries?.length || 0) / itemsPerPage)
+
+  const handleOk = (): void => {
+    setConfirmLoading(true)
+    const deferred = new Deferred()
+    setOperation({
+      type: 'reset-data',
+      password: userPass,
+      folder_path: '',
+      deferredInstance: deferred
+    })
+
+    deferred.promise.then(() => {
+      setIsOpen(false)
+      setConfirmLoading(false)
+      setTimeout(() => location.reload(), 300)
+    })
+  }
 
   const calculateItemsPerPage = (): void => {
     const windowWidth = window.innerWidth
@@ -97,6 +122,27 @@ export function Main({ libraries, setOperation, showConf }: MainProps): React.Re
         </div>
         <div className="container conf-section">
           <h1>Settings</h1>
+          <Flex wrap="wrap" align="flex-start" justify="space-around">
+            <p>Some config</p>
+          </Flex>
+          <Popconfirm
+            title="Are you sure to reset all data?"
+            description={
+              <>
+                <p>This action cannot be undone and if you have encrypted</p>
+                <p>folders they can no longer be decrypted.</p>
+              </>
+            }
+            open={isOpen}
+            onConfirm={handleOk}
+            okButtonProps={{ loading: confirmLoading }}
+            onCancel={handleCancel}
+            placement="topLeft"
+          >
+            <Button type="primary" danger onClick={showPopconfirm}>
+              Reset to default
+            </Button>
+          </Popconfirm>
         </div>
       </MotionDiv>
     </div>

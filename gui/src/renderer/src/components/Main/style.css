@@ -17,9 +17,15 @@
   opacity: 0;
 }
 
-.main-content > .folders-section {
+.main-content > .folders-section,
+.main-content > .conf-section {
   display: flex;
   flex-direction: column;
+}
+
+.main-content > .conf-section > .ant-flex {
+  flex-grow: 1;
+  padding: .5rem 0 .5rem 0;
 }
 
 .folders-section > .ant-flex {
@@ -29,6 +35,10 @@
   min-width: 100%;
   flex-grow: 1;
   gap: 16px;
+}
+
+.main-content > .conf-section .ant-btn {
+  align-self: flex-end;
 }
 
 .ant-empty {

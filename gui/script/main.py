@@ -26,6 +26,7 @@ operations = [
   'hide',
   'show',
   'delete',
+  'reset-data'
 ]
 states = [
   'pending',
@@ -359,6 +360,19 @@ def delete_folder(folder_path: str, password: str, libraries: list):
   
   printResponse(operations[6], states[1], "Folder has been deleted successfully.")
 
+
+def delete_library(password: str):
+  if password is not None:
+    libraries = load_secret(secret, password)
+    if isValidPassword(libraries) is False:
+      printResponse(operations[3], states[2], "Wrong password.")
+    else:
+      os.remove(secret)
+      printResponse(operations[3], states[1], "Library has been deleted successfully.")
+  else:
+    printResponse(operations[3], states[2], "Password is required.")
+
+
 # Handle args functions
 
 
@@ -449,5 +463,7 @@ if __name__ == "__main__":
     handleShow(args.folder_path, args.password)
   elif args.function == "delete":
     handleDelete(args.folder_path, args.password)
+  elif args.function == "reset-data":
+    delete_library(args.password)
   else:
     printResponse(operations[0], states[2], "Invalid function.")

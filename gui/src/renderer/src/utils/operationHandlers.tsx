@@ -146,6 +146,21 @@ export function handleOperationChange(props: handleOperationChangeProps): void {
         handleUnspectedError({ msg: error } as WsResponse, operation)
       }
     }
+  } else if (operation.type === 'reset-data') {
+    handleMessage = async (event: MessageEvent): Promise<void> => {
+      try {
+        const res: WsResponse = JSON.parse(event.data)
+        if (res.type === 'success') {
+          operation.deferredInstance?.resolve(res.type)
+        } else if (res.type === 'error') {
+          operation.deferredInstance?.reject(res.msg ?? 'Unknow error.')
+        }
+      } catch (error) {
+        handleUnspectedError({ msg: error } as WsResponse, operation)
+      }
+    }
+    createWsConnection({ msgToEmit: msg, onMessage: handleMessage })
+    return
   }
 
   if (!handleMessage) {

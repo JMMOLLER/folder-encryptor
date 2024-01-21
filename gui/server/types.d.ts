@@ -6,6 +6,7 @@ type Operation =
   | 'hide'
   | 'show'
   | 'delete'
+  | 'reset-data'
 type States = 'complete' | 'pending' | 'error'
 
 type Msg = {
