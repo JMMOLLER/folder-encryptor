@@ -1,7 +1,8 @@
 import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
+import linuxIcon from '../../resources/linux-icon.png?asset'
+import winIcon from '../../resources/win-icon.ico?asset'
 //IMPORTING SERVER
 import '../../server/app'
 
@@ -18,7 +19,7 @@ function createWindow(): void {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
     },
-    ...(process.platform === 'linux' ? { icon } : {})
+    ...(process.platform === 'linux' ? { icon: linuxIcon } : { icon: winIcon })
   })
 
   mainWindow.on('ready-to-show', () => {
