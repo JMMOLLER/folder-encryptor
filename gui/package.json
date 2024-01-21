@@ -1,10 +1,17 @@
 {
   "name": "gui",
   "version": "1.0.0",
-  "description": "An Electron application with React and TypeScript",
+  "description": "Folder encryption and decryption tool",
   "main": "./out/main/index.js",
-  "author": "example.com",
-  "homepage": "https://www.electronjs.org",
+  "author": "JMMOLLER",
+  "homepage": "https://github.com/JMMOLLER/folder-encryptor",
+  "build": {
+    "appId": "com.jmmoller.akira.app",
+    "productName": "Akira folder encryptor",
+    "extraResources": [
+      "./script/**/*"
+    ]
+  },
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",

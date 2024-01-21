@@ -1,5 +1,7 @@
 import { spawn } from 'child_process'
 import { WebSocket as WS } from 'ws'
+import { app } from 'electron'
+import path from 'path'
 
 /**
  * @summary Transform JS object to string.
@@ -21,6 +23,17 @@ function renderResponse(
 }
 
 /**
+ * @summary Get the path of Python script.
+ *
+ * @returns {string}
+ */
+function getScriptPath(): string {
+  return app.isPackaged
+    ? path.join(process.resourcesPath, 'script', 'main.py')
+    : path.join(__dirname, '../../script/main.py')
+}
+
+/**
  * @summary Handles messages from client.
  *
  * @param req The request from the client.
@@ -28,8 +41,9 @@ function renderResponse(
  * @returns {void}
  */
 const handleRequest = (req: Msg, wsIns: WS | null): void => {
+  const scriptPath = getScriptPath()
   const python = spawn('python', [
-    'script/main.py',
+    scriptPath,
     '--function',
     req.type,
     '--folder_path',
