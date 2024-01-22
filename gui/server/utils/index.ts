@@ -66,9 +66,18 @@ function getExecutableName(): string | null {
 }
 
 const appLogger = (scriptPath: string): void => {
-  fs.writeFile(`${Date.now()}.log`, scriptPath, (err) => {
+  const logsDir = path.join(__dirname, 'logs')
+  fs.mkdirSync(logsDir, { recursive: true })
+
+  const logFile = path.join(logsDir, `${Date.now()}.log`)
+  fs.writeFile(logFile, scriptPath, (err) => {
     if (err) throw err
-    console.info('The file has been saved!')
+    console.info(
+      '\x1b[31m',
+      `[ERROR] ${new Date().toLocaleTimeString()} - `,
+      'Error has been detected, log file has been saved!',
+      '\x1b[0m'
+    )
   })
 }
 
