@@ -5,6 +5,7 @@ import platform
 import subprocess
 import sys
 import time
+from uuid import uuid4
 
 from cryptography.fernet import Fernet
 import hashlib
@@ -85,6 +86,10 @@ def is_encrypted(folder_path, libraries, index):
   return False
 
 
+def generate_uuid():
+  return str(uuid4())[:12]
+
+
 def count_files(folder_path):
   global total_items
   global processed_items
@@ -116,14 +121,17 @@ def get_folders(folder_path: str):
   return folders
 
 
-def encrypt_filename(fernet: Fernet, filename: str, file_path: str, root: str):
+def encrypt_filename(fernet: Fernet, filename: str, file_path: str, root: str, relations: dict):
   encrypted_name = fernet.encrypt(filename.encode())
-  os.rename(file_path, os.path.join(root, encrypted_name.decode()))
-  return encrypted_name.decode()
+  uuid = generate_uuid()
+  os.rename(file_path, os.path.join(root, uuid))
+  relations[uuid] = encrypted_name.decode()
+  return uuid
 
 
-def decrypt_filename(fernet: Fernet, filename: str, file_path: str, root: str):
-  decrypted_name = fernet.decrypt(filename.encode())
+def decrypt_filename(fernet: Fernet, filename: str, file_path: str, root: str, relations: dict):
+  encrypted_name: str = relations[filename]
+  decrypted_name = fernet.decrypt(encrypted_name.encode())
   os.rename(file_path, os.path.join(root, decrypted_name.decode()))
 
 
@@ -182,6 +190,7 @@ def encrypt_folder(folder_path: str, password: str, libraries: list) -> None:
 
   folders = get_folders(folder_path)
   folders_excluded = []
+  relations = {}
 
   # Encrypt the files in the folder
   for current_root in folders:
@@ -198,10 +207,10 @@ def encrypt_folder(folder_path: str, password: str, libraries: list) -> None:
           encrypted_data = fernet.encrypt(data)
           with open(file_path, 'wb') as f:
             f.write(encrypted_data)
-          encrypt_filename(fernet, file, file_path, root)
+          encrypt_filename(fernet, file, file_path, root, relations)
           send_processed_items(operations[0])
       if current_folder != folder_base_name:
-        new_folder_name = encrypt_filename(fernet, current_folder, root, os.path.dirname(root))
+        new_folder_name = encrypt_filename(fernet, current_folder, root, os.path.dirname(root), relations)
         folders_excluded.append(new_folder_name)
 
   folder_path = folder_path.replace(
@@ -209,7 +218,8 @@ def encrypt_folder(folder_path: str, password: str, libraries: list) -> None:
     encrypt_filename(
         fernet,
         folder_base_name,
-        folder_path, os.path.dirname(folder_path)
+        folder_path, os.path.dirname(folder_path),
+        relations
     )
   )
 
@@ -221,6 +231,7 @@ def encrypt_folder(folder_path: str, password: str, libraries: list) -> None:
     'currentName': os.path.basename(folder_path),
     'originalName': folder_base_name,
     'isHidden': False,
+    'relations': relations
     })
   save_secret(secret, password, libraries)
 
@@ -259,9 +270,9 @@ def decrypt_folder(folder_path: str, password: str, libraries: list):
           decrypted_data = fernet.decrypt(data)
           with open(file_path, 'wb') as f:
             f.write(decrypted_data)
-          decrypt_filename(fernet, file, file_path, root)
+          decrypt_filename(fernet, file, file_path, root, item['relations'])
           send_processed_items(operations[1])
-      decrypt_filename(fernet, folder_name, root, os.path.dirname(root))
+      decrypt_filename(fernet, folder_name, root, os.path.dirname(root), item['relations'])
 
   # Remove the folder from the list
   libraries = [librarie for librarie in libraries if librarie['path'] != folder_path]
