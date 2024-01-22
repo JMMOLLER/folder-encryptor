@@ -1,6 +1,8 @@
 import { spawn } from 'child_process'
 import { WebSocket as WS } from 'ws'
-import { app } from 'electron'
+import { app, dialog } from 'electron'
+import fs from 'fs'
+import os from 'os'
 import path from 'path'
 
 /**
@@ -18,8 +20,18 @@ function renderResponse(
   msg: WsResponse['msg'],
   data: WsResponse['data']
 ): string {
-  console.log('Mensaje enviado: ', { type, status, msg, data })
+  console.info('Mensaje enviado: ', { type, status, msg, data })
   return JSON.stringify({ type, status, msg, data })
+}
+
+/**
+ * @summary Handles error from spawn.
+ *
+ * @param {Error} err The error
+ */
+function handleSpawnError(err: Error): void {
+  appLogger(err.stack || err.toString())
+  dialog.showErrorBox(err.name, err.stack || err.toString())
 }
 
 /**
@@ -28,9 +40,36 @@ function renderResponse(
  * @returns {string}
  */
 function getScriptPath(): string {
+  const executableName = getExecutableName()
+
+  if (!executableName) throw new Error('Unsupported platform')
+
   return app.isPackaged
-    ? path.join(process.resourcesPath, 'script', 'main.py')
-    : path.join(__dirname, '../../script/main.py')
+    ? path.join(process.resourcesPath, 'script', executableName)
+    : path.join(__dirname, '../../script/service.py')
+}
+
+/**
+ * @summary Get the name of executable file.
+ *
+ * @returns {string | null}
+ */
+function getExecutableName(): string | null {
+  const platform = os.platform()
+
+  switch (platform) {
+    case 'win32':
+      return 'service_x64.exe'
+    default:
+      return null
+  }
+}
+
+const appLogger = (scriptPath: string): void => {
+  fs.writeFile(`${Date.now()}.log`, scriptPath, (err) => {
+    if (err) throw err
+    console.info('The file has been saved!')
+  })
 }
 
 /**
@@ -42,7 +81,8 @@ function getScriptPath(): string {
  */
 const handleRequest = (req: Msg, wsIns: WS | null): void => {
   const scriptPath = getScriptPath()
-  const python = spawn('python', [
+  const command = app.isPackaged ? scriptPath : 'python'
+  const options = [
     scriptPath,
     '--function',
     req.type,
@@ -50,7 +90,12 @@ const handleRequest = (req: Msg, wsIns: WS | null): void => {
     req.folder_path,
     '--password',
     req.password
-  ])
+  ]
+
+  if (app.isPackaged) options.shift()
+  if (!command) throw new Error('Unsupported platform')
+
+  const python = spawn(command, options).on('error', handleSpawnError)
   let errorMsg = ''
 
   python.stdout.on('data', (data) => handleResponse(JSON.parse(data.toString()), wsIns))
@@ -92,6 +137,7 @@ const handleResponse = (res: PythonResponse, wsIns: WS | null): void => {
  */
 const handleError = (data: string, wsIns: WS | null): void => {
   console.error(data.toString())
+  appLogger(data.toString())
   wsIns?.send(renderResponse('error', 'complete', data.toString(), null))
   wsIns?.close()
 }

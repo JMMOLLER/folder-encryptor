@@ -1,5 +1,5 @@
 {
-  "name": "gui",
+  "name": "akira-folder-encryptor",
   "version": "1.0.0",
   "description": "Folder encryption and decryption tool",
   "main": "./out/main/index.js",
@@ -7,10 +7,13 @@
   "homepage": "https://github.com/JMMOLLER/folder-encryptor",
   "build": {
     "appId": "com.jmmoller.akira.app",
-    "productName": "Akira folder encryptor",
+    "productName": "Akira - Folder Encryptor",
     "extraResources": [
-      "./script/**/*"
-    ]
+      "./script/service_x64.exe"
+    ],
+    "win": {
+      "icon": "resources/win-icon.ico"
+    }
   },
   "scripts": {
     "format": "prettier --write .",
