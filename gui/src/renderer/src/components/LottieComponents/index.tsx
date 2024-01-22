@@ -39,6 +39,8 @@ export function UnlockAnim({ item, setOperation }: LottieComponentProps): React.
   }, [Lottie.animationContainerRef])
 
   const handleClick = (): void => {
+    if (!item.path) return
+
     Lottie.play()
     const deferred = new Deferred()
     setOperation({
@@ -69,6 +71,8 @@ export function DeleteAnim({ item, setOperation }: LottieComponentProps): React.
   const { userPass } = usePassworContext()
 
   const handleClick = (): void => {
+    if (!item.path) return
+
     Lottie.goToAndPlay(0, true)
     setOperation({
       folder_path: item.path,
@@ -98,6 +102,8 @@ export function HideShowAnim({ item, setOperation }: LottieComponentProps): Reac
   const Lottie = useLottie(options, style)
 
   const handleClick = (): void => {
+    if (!item.path) return
+
     const operation = {
       folder_path: item.path,
       type: isHidden ? 'show' : 'hide',
